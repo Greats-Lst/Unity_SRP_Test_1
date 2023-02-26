@@ -17,6 +17,9 @@ public class CommonCameraRender
     // Cull
     private CullingResults m_cull_res;
 
+    // Drawing Geometry
+    private static ShaderTagId m_unlit_shader_tag_id = new ShaderTagId("SRPDefaultUnlit"); // 这里的SRPDefaultUnlit是固定的
+
     public void Render(ScriptableRenderContext context, Camera camera)
     {
         m_context = context;
@@ -55,6 +58,16 @@ public class CommonCameraRender
 
     private void DrawVisibleGeometry()
     {
+        var sorting_setting = new SortingSettings(m_camera)
+        {
+            // front-to-back for opaque
+            criteria = SortingCriteria.CommonOpaque
+        };
+        var drawing_settings = new DrawingSettings(m_unlit_shader_tag_id, sorting_setting);
+        var filtering_settings = new FilteringSettings(RenderQueueRange.all);
+
+        m_context.DrawRenderers(m_cull_res, ref drawing_settings, ref filtering_settings);
+
         m_context.DrawSkybox(m_camera);
     }
 
