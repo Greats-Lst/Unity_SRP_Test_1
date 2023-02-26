@@ -64,11 +64,19 @@ public class CommonCameraRender
             criteria = SortingCriteria.CommonOpaque
         };
         var drawing_settings = new DrawingSettings(m_unlit_shader_tag_id, sorting_setting);
-        var filtering_settings = new FilteringSettings(RenderQueueRange.all);
+        var filtering_settings = new FilteringSettings(RenderQueueRange.opaque);
 
+        // Opaque
         m_context.DrawRenderers(m_cull_res, ref drawing_settings, ref filtering_settings);
 
+        // Sky Box
         m_context.DrawSkybox(m_camera);
+
+        // Transparent
+        sorting_setting.criteria = SortingCriteria.CommonTransparent;
+        drawing_settings.sortingSettings = sorting_setting;
+        filtering_settings.renderQueueRange = RenderQueueRange.transparent;
+        m_context.DrawRenderers(m_cull_res, ref drawing_settings, ref filtering_settings);
     }
 
     private void Submit()
