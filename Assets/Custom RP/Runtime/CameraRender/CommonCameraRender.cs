@@ -5,22 +5,16 @@ using UnityEngine.Rendering;
 
 public class CommonCameraRender
 {
+    private const string CommandBufferName = "Render Camera";
+
     private ScriptableRenderContext m_context;
-
     private Camera m_camera;
-
-    private CommandBuffer m_cmd_buffer;
-    private string m_cmd_name = "Camera Render";
+    private CommandBuffer m_buffer = new CommandBuffer() { name = CommandBufferName };
 
     public void Render(ScriptableRenderContext context, Camera camera)
     {
         m_context = context;
         m_camera = camera;
-
-        m_cmd_buffer = new CommandBuffer()
-        {
-            name = m_cmd_name,
-        };
 
         Setup();
         DrawVisibleGeometry();
@@ -30,9 +24,9 @@ public class CommonCameraRender
     private void Setup()
     {
         // Inject Profiler & Frame Debugger - 1
-        m_cmd_buffer.BeginSample(m_cmd_name);
+        m_buffer.BeginSample(CommandBufferName);
 
-        m_context.ExecuteCommandBuffer(m_cmd_buffer);
+        //ExecuteBuffer();
         m_context.SetupCameraProperties(m_camera);
     }
 
@@ -44,8 +38,16 @@ public class CommonCameraRender
     private void Submit()
     {
         // Inject Profiler & Frame Debugger - 2
-        m_cmd_buffer.EndSample("111");
+        m_buffer.EndSample(CommandBufferName);
 
+        // Issue1：不太懂为什么Setup做一次，这里还要再做一次才能在FrameDebugger里显示出来
+        ExecuteBuffer();
         m_context.Submit();
+    }
+
+    private void ExecuteBuffer()
+    {
+        m_context.ExecuteCommandBuffer(m_buffer);
+        m_buffer.Clear();
     }
 }
