@@ -23,11 +23,12 @@ public class CommonCameraRender
 
     private void Setup()
     {
+        m_context.SetupCameraProperties(m_camera);
+        m_buffer.ClearRenderTarget(true, true, Color.clear);
         // Inject Profiler & Frame Debugger - 1
         m_buffer.BeginSample(CommandBufferName);
 
-        //ExecuteBuffer();
-        m_context.SetupCameraProperties(m_camera);
+        ExecuteBuffer();
     }
 
     private void DrawVisibleGeometry()
