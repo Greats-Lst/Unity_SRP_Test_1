@@ -7,18 +7,40 @@ public class CommonCameraRender
 {
     private const string CommandBufferName = "Render Camera";
 
+    // Overall Render
     private ScriptableRenderContext m_context;
     private Camera m_camera;
+
+    // Camera Buffer
     private CommandBuffer m_buffer = new CommandBuffer() { name = CommandBufferName };
+
+    // Cull
+    private CullingResults m_cull_res;
 
     public void Render(ScriptableRenderContext context, Camera camera)
     {
         m_context = context;
         m_camera = camera;
 
+        if (Cull() == false)
+        {
+            return;
+        }
+
         Setup();
         DrawVisibleGeometry();
         Submit();
+    }
+
+    private bool Cull()
+    {
+        if (m_camera.TryGetCullingParameters(out ScriptableCullingParameters parameters))
+        {
+            m_cull_res = m_context.Cull(ref parameters);
+            return true;
+        }
+
+        return false;
     }
 
     private void Setup()
