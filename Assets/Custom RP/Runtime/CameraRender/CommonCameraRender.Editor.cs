@@ -11,6 +11,8 @@ partial class CommonCameraRender
 
     partial void PrepareForSceneWindow();
 
+    partial void PrepareBuffer();
+
 #if UNITY_EDITOR
     private static ShaderTagId[] m_legacy_shader_tag_ids =
     {
@@ -59,6 +61,11 @@ partial class CommonCameraRender
         {
             ScriptableRenderContext.EmitWorldGeometryForSceneView(m_camera);
         }
+    }
+
+    partial void PrepareBuffer()
+    {
+        m_buffer.name = m_camera.name;
     }
 #endif
 }
