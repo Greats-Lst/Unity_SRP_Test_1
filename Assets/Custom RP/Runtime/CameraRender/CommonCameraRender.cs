@@ -33,6 +33,7 @@ public partial class CommonCameraRender
         Setup();
         DrawVisibleGeometry();
         DrawUnsupportedShaders();
+        DrawGizmos();
         Submit();
     }
 
