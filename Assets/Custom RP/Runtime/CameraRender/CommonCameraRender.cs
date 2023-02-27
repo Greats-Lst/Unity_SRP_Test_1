@@ -55,7 +55,7 @@ public partial class CommonCameraRender
         m_context.SetupCameraProperties(m_camera);
         m_buffer.ClearRenderTarget(true, true, Color.clear);
         // Inject Profiler & Frame Debugger - 1
-        m_buffer.BeginSample(CommandBufferName);
+        m_buffer.BeginSample(SampleName);
 
         ExecuteBuffer();
     }
@@ -86,7 +86,7 @@ public partial class CommonCameraRender
     private void Submit()
     {
         // Inject Profiler & Frame Debugger - 2
-        m_buffer.EndSample(CommandBufferName);
+        m_buffer.EndSample(SampleName);
 
         // Issue1：不太懂为什么Setup做一次，这里还要再做一次才能在FrameDebugger里显示出来
         ExecuteBuffer();

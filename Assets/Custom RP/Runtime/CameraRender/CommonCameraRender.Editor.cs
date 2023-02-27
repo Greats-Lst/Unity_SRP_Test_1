@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Profiling;
 
 partial class CommonCameraRender
 {
@@ -63,9 +64,14 @@ partial class CommonCameraRender
         }
     }
 
+    string SampleName { get; set; }
     partial void PrepareBuffer()
     {
-        m_buffer.name = m_camera.name;
+        Profiler.BeginSample("Editor Only");
+        m_buffer.name = SampleName = m_camera.name;
+        Profiler.EndSample();
     }
+#else
+    const string SampleName = CommandBufferName;
 #endif
 }
