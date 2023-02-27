@@ -25,6 +25,7 @@ public partial class CommonCameraRender
         m_context = context;
         m_camera = camera;
 
+        PrepareForSceneWindow();
         if (Cull() == false)
         {
             return;

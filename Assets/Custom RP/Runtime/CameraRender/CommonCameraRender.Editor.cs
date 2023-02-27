@@ -9,6 +9,8 @@ partial class CommonCameraRender
 
     partial void DrawGizmos();
 
+    partial void PrepareForSceneWindow();
+
 #if UNITY_EDITOR
     private static ShaderTagId[] m_legacy_shader_tag_ids =
     {
@@ -48,6 +50,14 @@ partial class CommonCameraRender
         {
             m_context.DrawGizmos(m_camera, GizmoSubset.PreImageEffects);
             m_context.DrawGizmos(m_camera, GizmoSubset.PostImageEffects);
+        }
+    }
+
+    partial void PrepareForSceneWindow()
+    {
+        if (m_camera.cameraType == CameraType.SceneView)
+        {
+            ScriptableRenderContext.EmitWorldGeometryForSceneView(m_camera);
         }
     }
 #endif
