@@ -53,7 +53,11 @@ public partial class CommonCameraRender
     private void Setup()
     {
         m_context.SetupCameraProperties(m_camera);
-        m_buffer.ClearRenderTarget(true, true, Color.clear);
+        var flag = m_camera.clearFlags;
+        bool clear_depth_status = flag <= CameraClearFlags.Depth;
+        bool clear_color_status = flag == CameraClearFlags.Color;
+        Color background_color = clear_color_status ? m_camera.backgroundColor.linear : Color.clear;
+        m_buffer.ClearRenderTarget(clear_depth_status, clear_color_status, background_color);
         // Inject Profiler & Frame Debugger - 1
         m_buffer.BeginSample(SampleName);
 
