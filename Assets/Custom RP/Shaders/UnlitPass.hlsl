@@ -1,14 +1,20 @@
 #ifndef CUSTOM_UNLIT_PASS_INCLUDE
 #define CUSTOM_UNLIT_PASS_INCLUDE
 
-float4 UnlitPassVertex(float3 position_os : POSITION) : SV_POSITION
+#include "../ShaderLibrary/Common.hlsl"
+
+float4 _BaseColor;
+
+float4 UnlitPassVertex(float3 positionOS : POSITION) : SV_POSITION
 {
-	return float4(position_os, 1.0f);
+	//todo: 这里的矩阵竟然是有用的，但是我没有在Common.hlsl里设置这个值啊?
+	float3 worldPos = TransformObjectToWorld(positionOS);
+	return TransformWorldToHClip(worldPos);
 }
 
 float4 UnlitPassFragment() : SV_TARGET
 {
-	return 1.0f;
+	return _BaseColor;
 }
 
 #endif
