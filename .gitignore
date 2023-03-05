@@ -1,0 +1,13 @@
+#ignore file
+A_PC_Build
+Logs
+Temp
+.vs
+obj
+Assembly-CSharp.csproj
+Unity_SRP_Test_1.sln
+.vsconfig
+Library
+ProjectSettings
+Packages
+UserSettings
