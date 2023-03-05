@@ -314,7 +314,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
-  m_mat: {fileID: 2100000, guid: 33f424fd8ca118f418732c6dcbbefa6f, type: 2}
+  m_mat: {fileID: 2100000, guid: 25c8765237d74ea4c94a1e26c8d950e3, type: 2}
   m_mesh_count: 1023
 --- !u!1 &1476928638
 GameObject:
