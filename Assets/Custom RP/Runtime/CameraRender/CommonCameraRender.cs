@@ -18,7 +18,8 @@ public partial class CommonCameraRender
     private CullingResults m_cull_res;
 
     // Drawing Geometry
-    private static ShaderTagId m_unlit_shader_tag_id = new ShaderTagId("SRPDefaultUnlit"); // 这里的SRPDefaultUnlit是固定的
+    private static ShaderTagId m_unlit_shader_tag_id = new ShaderTagId("SRPDefaultUnlit"); // Tag.LightMode=SRPDefaultUnlit是固定的
+    private static ShaderTagId m_lit_shader_tag_id = new ShaderTagId("CustomLit");
 
     public void Render(ScriptableRenderContext context, Camera camera,
         bool enable_dynamic_batch, bool enable_instancing)
@@ -77,6 +78,7 @@ public partial class CommonCameraRender
             enableDynamicBatching = enable_dynamic_batch,
             enableInstancing = enable_instancing,
         };
+        drawing_settings.SetShaderPassName(1, m_lit_shader_tag_id); // 构造时已经设置了第一个Shader Pass（m_unlit_shader_tag_id）
         var filtering_settings = new FilteringSettings(RenderQueueRange.opaque);
 
         // Opaque
