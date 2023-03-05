@@ -5,6 +5,7 @@ using UnityEngine;
 public class Create76RandomSpere : MonoBehaviour
 {
     public Material[] Materials;
+    public PrimitiveType m_go_type = PrimitiveType.Sphere;
     public int SpereCount = 76;
     public int RandomColorCount = 24;
 
@@ -18,7 +19,7 @@ public class Create76RandomSpere : MonoBehaviour
         int rad_color_count = RandomColorCount;
         for (int i = 0; i < SpereCount; ++i)
         {
-            var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            var sphere = GameObject.CreatePrimitive(m_go_type);
 
             // Set Material
             var render = sphere.GetComponent<Renderer>();

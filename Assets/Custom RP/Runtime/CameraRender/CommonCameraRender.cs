@@ -20,7 +20,8 @@ public partial class CommonCameraRender
     // Drawing Geometry
     private static ShaderTagId m_unlit_shader_tag_id = new ShaderTagId("SRPDefaultUnlit"); // 这里的SRPDefaultUnlit是固定的
 
-    public void Render(ScriptableRenderContext context, Camera camera)
+    public void Render(ScriptableRenderContext context, Camera camera,
+        bool enable_dynamic_batch, bool enable_instancing)
     {
         m_context = context;
         m_camera = camera;
@@ -33,7 +34,7 @@ public partial class CommonCameraRender
         }
 
         Setup();
-        DrawVisibleGeometry();
+        DrawVisibleGeometry(enable_dynamic_batch, enable_instancing);
         DrawUnsupportedShaders();
         DrawGizmos();
         Submit();
@@ -64,14 +65,18 @@ public partial class CommonCameraRender
         ExecuteBuffer();
     }
 
-    private void DrawVisibleGeometry()
+    private void DrawVisibleGeometry(bool enable_dynamic_batch, bool enable_instancing)
     {
         var sorting_setting = new SortingSettings(m_camera)
         {
             // front-to-back for opaque
             criteria = SortingCriteria.CommonOpaque
         };
-        var drawing_settings = new DrawingSettings(m_unlit_shader_tag_id, sorting_setting);
+        var drawing_settings = new DrawingSettings(m_unlit_shader_tag_id, sorting_setting)
+        {
+            enableDynamicBatching = enable_dynamic_batch,
+            enableInstancing = enable_instancing,
+        };
         var filtering_settings = new FilteringSettings(RenderQueueRange.opaque);
 
         // Opaque
