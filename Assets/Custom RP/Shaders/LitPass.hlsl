@@ -14,6 +14,8 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
 	UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
 	UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
 	UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
+	UNITY_DEFINE_INSTANCED_PROP(float, _Metalic)
+	UNITY_DEFINE_INSTANCED_PROP(float, _Smoothness)
 UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
 struct Attributes {
@@ -64,6 +66,8 @@ float4 LitPassFragment(Varyings input) : SV_TARGET
 	s.color = res_color_1.rgb;
 	s.normal = normal;
 	s.alpha = res_color_1.a;
+	s.metalic = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Metalic);
+	s.smoothness = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Smoothness);
 	float3 res_color_2 = GetLighting(s);
 
 	return float4(res_color_2, s.alpha);

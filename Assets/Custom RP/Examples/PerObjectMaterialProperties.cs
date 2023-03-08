@@ -7,10 +7,14 @@ public class PerObjectMaterialProperties : MonoBehaviour
 {
     public Color BaseColor = Color.white;
     public float CutOff = 0.5f;
+    public float Matalic = 0f;
+    public float Smoothness = 0.5f;
 
     private static MaterialPropertyBlock m_mat_block;
     private static int m_base_color_id = Shader.PropertyToID("_BaseColor");
     private static int m_cut_off_id = Shader.PropertyToID("_Cutoff");
+    private static int m_metalic_id = Shader.PropertyToID("_Metalic");
+    private static int m_smoothness_id = Shader.PropertyToID("_Smoothness");
     void Start()
     {
         if (m_mat_block == null)
@@ -34,6 +38,8 @@ public class PerObjectMaterialProperties : MonoBehaviour
         BaseColor.b = Random.Range(0f, 1f);
         m_mat_block.SetColor(m_base_color_id, BaseColor);
         m_mat_block.SetFloat(m_cut_off_id, CutOff);
+        m_mat_block.SetFloat(m_metalic_id, Matalic);
+        m_mat_block.SetFloat(m_smoothness_id, Smoothness);
         renderer.SetPropertyBlock(m_mat_block);
     }
 }

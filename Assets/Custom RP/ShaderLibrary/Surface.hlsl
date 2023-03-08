@@ -10,6 +10,10 @@ struct Surface
 	float3 normal;
 
 	float alpha;
+
+	float metalic;
+
+	float smoothness;
 };
 
 #endif
