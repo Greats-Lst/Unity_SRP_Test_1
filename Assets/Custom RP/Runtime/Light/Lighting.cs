@@ -47,6 +47,10 @@ public class Lighting
                 break;
             }
         }
+        for (int i = 0; i < m_max_directional_light_count - dir_light_count; ++i)
+        {
+            m_direction_light_colors[m_max_directional_light_count - 1 - i] = Color.black;
+        }
 
         m_cmd_buffer.SetGlobalInt(m_dir_light_count, dir_light_count);
         m_cmd_buffer.SetGlobalVectorArray(m_directional_light_color_tags, m_direction_light_colors);
