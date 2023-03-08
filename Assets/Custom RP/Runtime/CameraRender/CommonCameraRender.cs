@@ -10,6 +10,7 @@ public partial class CommonCameraRender
     // Overall Render
     private ScriptableRenderContext m_context;
     private Camera m_camera;
+    private Lighting m_light = new Lighting();
 
     // Camera Buffer
     private CommandBuffer m_buffer = new CommandBuffer() { name = CommandBufferName };
@@ -35,6 +36,7 @@ public partial class CommonCameraRender
         }
 
         Setup();
+        m_light.Setup(context, m_cull_res);
         DrawVisibleGeometry(enable_dynamic_batch, enable_instancing);
         DrawUnsupportedShaders();
         DrawGizmos();

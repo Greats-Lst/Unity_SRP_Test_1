@@ -11,6 +11,7 @@ public class MyScriptRenderPipieline : RenderPipeline
     public MyScriptRenderPipieline(bool enable_dynamic_batch, bool enable_instancing, bool enable_srp_batch)
     {
         GraphicsSettings.useScriptableRenderPipelineBatching = enable_srp_batch;
+        GraphicsSettings.lightsUseLinearIntensity = true;
 
         m_enable_dynamic_batch = enable_dynamic_batch;
         m_enable_instancing = enable_instancing;
