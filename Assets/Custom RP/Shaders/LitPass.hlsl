@@ -4,6 +4,7 @@
 #include "../ShaderLibrary/Common.hlsl"
 #include "../ShaderLibrary/Surface.hlsl"
 #include "../ShaderLibrary/Light.hlsl"
+#include "../ShaderLibrary/BRDF.hlsl"
 #include "../ShaderLibrary/Lighting.hlsl"
 
 TEXTURE2D(_BaseMap);
@@ -30,6 +31,7 @@ struct Varyings
 	float4 positionCS : SV_POSITION;
 	float2 baseUV : VAR_BASE_UV;
 	float3 normalWS : VAR_NORMAL;
+	float3 positionWS : VAR_POSITION;
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -38,8 +40,8 @@ Varyings LitPassVertex(Attributes input) //: SV_POSITION
 	Varyings output;
 	UNITY_SETUP_INSTANCE_ID(input);
 	UNITY_TRANSFER_INSTANCE_ID(input, output);
-	float3 worldPos = TransformObjectToWorld(input.positionOS);
-	output.positionCS = TransformWorldToHClip(worldPos);
+	output.positionWS = TransformObjectToWorld(input.positionOS);
+	output.positionCS = TransformWorldToHClip(output.positionWS);
 
 	float4 st = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseMap_ST);
 	output.baseUV = input.baseUV * st.xy + st.zw;
@@ -68,7 +70,9 @@ float4 LitPassFragment(Varyings input) : SV_TARGET
 	s.alpha = res_color_1.a;
 	s.metalic = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Metalic);
 	s.smoothness = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Smoothness);
-	float3 res_color_2 = GetLighting(s);
+	s.view_direction = normalize(_WorldSpaceCameraPos - input.positionWS);
+	BRDF brdf = GetBRDF(s);
+	float3 res_color_2 = GetLighting(s, brdf);
 
 	return float4(res_color_2, s.alpha);
 }
