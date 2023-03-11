@@ -71,7 +71,11 @@ float4 LitPassFragment(Varyings input) : SV_TARGET
 	s.metalic = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Metalic);
 	s.smoothness = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Smoothness);
 	s.view_direction = normalize(_WorldSpaceCameraPos - input.positionWS);
+#if defined(_APPLYALPHATODIFFUSE)
+	BRDF brdf = GetBRDF(s, true);
+#else
 	BRDF brdf = GetBRDF(s);
+#endif
 	float3 res_color_2 = GetLighting(s, brdf);
 
 	return float4(res_color_2, s.alpha);
