@@ -6,7 +6,7 @@ using UnityEngine.Rendering;
 public class Shadows
 {
     private const string m_buffer_name = "Shadows";
-    private const int m_max_directional_light_shadow_count = 1;
+    private const int m_max_directional_light_shadow_count = 4;
     private static int m_dir_shadow_atlas_id = Shader.PropertyToID("_DirectionalShadowAtlas");
 
     struct ShadowedDirectionalLight
@@ -70,16 +70,19 @@ public class Shadows
         m_cmd_buffer.BeginSample(m_buffer_name);
         ExecuteBuffer();
 
+        int split = m_shadowed_dir_lights_count <= 1 ? 1 : 2;
+        int tile_size = atlas_size / split;
+
         for (int i = 0; i < m_shadowed_dir_lights.Length; ++i)
         {
-            RenderDirectionalLightShadows(i, atlas_size);
+            RenderDirectionalLightShadows(i, split, tile_size);
         }
 
         m_cmd_buffer.EndSample(m_buffer_name);
         ExecuteBuffer();
     }
 
-    private void RenderDirectionalLightShadows(int index, int tile_size)
+    private void RenderDirectionalLightShadows(int index, int split, int tile_size)
     {
         var light = m_shadowed_dir_lights[index];
         ShadowDrawingSettings set = new ShadowDrawingSettings(m_culling_res, light.VisibleLightIndex);
@@ -91,10 +94,18 @@ public class Shadows
             out Matrix4x4 proj_matrix,
             out ShadowSplitData shadow_split_data);
         set.splitData = shadow_split_data;
+        SetTileViewport(index, split, tile_size);
         m_cmd_buffer.SetViewProjectionMatrices(view_matrix, proj_matrix);
         ExecuteBuffer();
         // DrawShadows only renders objects with materials that have a "ShadowCaster" pass
         m_context.DrawShadows(ref set);
+    }
+
+    private void SetTileViewport(int index, int split, int tile_size)
+    {
+        Vector2 offset = new Vector2(index % split, index / split);
+        m_cmd_buffer.SetViewport(new Rect(offset.x * tile_size, offset.y * tile_size, 
+            tile_size, tile_size));
     }
 
     public void ReserveDirectionalShadows(Light light, int light_idx)
