@@ -22,31 +22,35 @@ public partial class CommonCameraRender
     private static ShaderTagId m_unlit_shader_tag_id = new ShaderTagId("SRPDefaultUnlit"); // Tag.LightMode=SRPDefaultUnlitÊÇ¹Ì¶¨µÄ
     private static ShaderTagId m_lit_shader_tag_id = new ShaderTagId("CustomLit");
 
-    public void Render(ScriptableRenderContext context, Camera camera,
-        bool enable_dynamic_batch, bool enable_instancing)
+    public void Render(ScriptableRenderContext context, 
+        Camera camera,
+        bool enable_dynamic_batch, 
+        bool enable_instancing,
+        ShadowSettings shadow_settings)
     {
         m_context = context;
         m_camera = camera;
 
         PrepareBuffer();
         PrepareForSceneWindow();
-        if (Cull() == false)
+        if (Cull(shadow_settings.MaxDistance) == false)
         {
             return;
         }
 
         Setup();
-        m_light.Setup(context, m_cull_res);
+        m_light.Setup(context, m_cull_res, shadow_settings);
         DrawVisibleGeometry(enable_dynamic_batch, enable_instancing);
         DrawUnsupportedShaders();
         DrawGizmos();
         Submit();
     }
 
-    private bool Cull()
+    private bool Cull(float max_shadow_distance)
     {
         if (m_camera.TryGetCullingParameters(out ScriptableCullingParameters parameters))
         {
+            parameters.shadowDistance = Mathf.Min(max_shadow_distance, m_camera.farClipPlane);
             m_cull_res = m_context.Cull(ref parameters);
             return true;
         }

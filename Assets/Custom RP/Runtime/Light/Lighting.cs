@@ -20,7 +20,7 @@ public class Lighting
 
     private CullingResults m_culling_res;
 
-    public void Setup(ScriptableRenderContext context, CullingResults cull_res)
+    public void Setup(ScriptableRenderContext context, CullingResults cull_res, ShadowSettings shadow_settings)
     {
         m_culling_res = cull_res;
 

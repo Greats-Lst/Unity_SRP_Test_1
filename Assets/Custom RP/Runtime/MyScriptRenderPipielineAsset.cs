@@ -7,16 +7,19 @@ using UnityEngine.Rendering;
 public class MyScriptRenderPipielineAsset : RenderPipelineAsset
 {
     [SerializeField]
-    private bool m_enable_dynamic_batch;
+    private bool EnableDynamicBatch;
 
     [SerializeField]
-    private bool m_enable_instancing;
+    private bool EnableGPUInstancing;
 
     [SerializeField]
-    private bool m_enable_srp_batch;
+    private bool EnableSRPBatch;
+
+    [SerializeField]
+    private ShadowSettings ShadowSettings = default;
 
     protected override RenderPipeline CreatePipeline()
     {
-        return new MyScriptRenderPipieline(m_enable_dynamic_batch, m_enable_instancing, m_enable_srp_batch);
+        return new MyScriptRenderPipieline(EnableDynamicBatch, EnableGPUInstancing, EnableSRPBatch, ShadowSettings);
     }
 }
