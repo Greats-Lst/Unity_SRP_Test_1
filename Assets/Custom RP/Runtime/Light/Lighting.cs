@@ -18,20 +18,29 @@ public class Lighting
 
     private CommandBuffer m_cmd_buffer = new CommandBuffer() { name = m_buffer_name };
 
+    private ScriptableRenderContext m_context;
     private CullingResults m_culling_res;
     private Shadows m_shadow = new Shadows();
 
     public void Setup(ScriptableRenderContext context, CullingResults cull_res, ShadowSettings shadow_settings)
     {
+        m_context = context;
         m_culling_res = cull_res;
 
-        m_cmd_buffer.BeginSample(m_buffer_name);
+        //m_cmd_buffer.BeginSample(m_buffer_name);
+        //ExecuteBuffer();
+
         m_shadow.Setup(context, cull_res, shadow_settings);
         SetupLights();
-        m_cmd_buffer.EndSample(m_buffer_name);
+        m_shadow.Render();
 
-        context.ExecuteCommandBuffer(m_cmd_buffer);
-        m_cmd_buffer.Clear();
+        //m_cmd_buffer.EndSample(m_buffer_name);
+        ExecuteBuffer();
+    }
+
+    public void ClearUp()
+    {
+        m_shadow.ClearUp();
     }
 
     private void SetupLights()
@@ -73,5 +82,11 @@ public class Lighting
         // 怎么理解呢，比如该对象没有旋转没有位移没有缩放，那么其z基向量在世界坐标系中的表示是（0，0，1），其z基向量在模型坐标系中的表示是（0，0，1）
         // 但是如果该对象绕着世界坐标的y轴顺时针旋转90°的话，那么其z基向量在世界坐标系中的表示是（1，0，0）（其实就是旋转到世界坐标系的x轴方向），其z基向量在模型坐标系中的表示还是（0，0，1）
         m_direction_light_dirs[index] = -visible_light.localToWorldMatrix.GetColumn(2);
+    }
+
+    private void ExecuteBuffer()
+    {
+        m_context.ExecuteCommandBuffer(m_cmd_buffer);
+        m_cmd_buffer.Clear();
     }
 }

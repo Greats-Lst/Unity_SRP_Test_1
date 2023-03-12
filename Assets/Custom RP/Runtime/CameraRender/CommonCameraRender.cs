@@ -38,11 +38,16 @@ public partial class CommonCameraRender
             return;
         }
 
-        Setup();
+        m_buffer.BeginSample(SampleName);
+        ExecuteBuffer();
         m_light.Setup(context, m_cull_res, shadow_settings);
+        m_buffer.EndSample(SampleName);
+
+        Setup();
         DrawVisibleGeometry(enable_dynamic_batch, enable_instancing);
         DrawUnsupportedShaders();
         DrawGizmos();
+        m_light.ClearUp();
         Submit();
     }
 
@@ -106,6 +111,8 @@ public partial class CommonCameraRender
         m_buffer.EndSample(SampleName);
 
         // Issue1：不太懂为什么Setup做一次，这里还要再做一次才能在FrameDebugger里显示出来
+        // Issue1 Resolve: 每一次设置CommandBuffer等于说要进行一次操作，比如第一次要进行Clear背景色，设置完就得立马开始进行（顺便附带了BeginSample）
+        // 等所有东西全部渲染完之后又设置了一次CommandBuffer（这里是EndSample操作），设置再立马开始进行
         ExecuteBuffer();
         m_context.Submit();
     }
