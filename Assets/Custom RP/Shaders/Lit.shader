@@ -29,12 +29,32 @@ Shader "Custom RP/Lit" {
 			Blend [_SrcBlend] [_DstBlend]
 			ZWrite [_ZWrite]
 			HLSLPROGRAM
+			#pragma target 3.5
 			#pragma multi_compile_instancing
 			#pragma shader_feature _CLIPPING
 			#pragma shader_feature _APPLYALPHATODIFFUSE
 			#pragma vertex LitPassVertex
 			#pragma fragment LitPassFragment
 			#include "LitPass.hlsl" // NOTE：这里少这个空格在Unity里不能编译通过！
+			ENDHLSL
+		}
+
+		Pass
+		{
+			Tags
+			{
+				"LightMode" = "ShadowCaster"
+			}
+
+			ColorMask 0
+
+			HLSLPROGRAM
+			#pragma target 3.5
+			#pragma shader_feature _CLIPPING
+			#pragma multi_compile_instancing
+			#pragma vertex ShadowCasterPassVertex
+			#pragma fragment ShadowCasterPassFragment
+			#include "ShadowCasterPass.hlsl" // NOTE：这里少这个空格在Unity里不能编译通过！
 			ENDHLSL
 		}
 	}
