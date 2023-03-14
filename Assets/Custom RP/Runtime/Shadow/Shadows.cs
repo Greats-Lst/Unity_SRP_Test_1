@@ -8,6 +8,9 @@ public class Shadows
     private const string m_buffer_name = "Shadows";
     private const int m_max_directional_light_shadow_count = 4;
     private static int m_dir_shadow_atlas_id = Shader.PropertyToID("_DirectionalShadowAtlas");
+    private static int m_dir_shadow_matrices_id = Shader.PropertyToID("_DirectionalShadowMatrices");
+
+    private static Matrix4x4[] m_dir_shadow_matrices = new Matrix4x4[m_max_directional_light_shadow_count];
 
     struct ShadowedDirectionalLight
     {
@@ -36,6 +39,12 @@ public class Shadows
         ExecuteBuffer();
     }
 
+    public void ClearUp()
+    {
+        m_cmd_buffer.ReleaseTemporaryRT(m_dir_shadow_atlas_id);
+        ExecuteBuffer();
+    }
+
     public void Render()
     {
         if (m_shadowed_dir_lights_count > 0)
@@ -47,12 +56,6 @@ public class Shadows
             m_cmd_buffer.GetTemporaryRT(m_dir_shadow_atlas_id, 1, 1,
                 16, FilterMode.Bilinear, RenderTextureFormat.Shadowmap);
         }
-    }
-
-    public void ClearUp()
-    {
-        m_cmd_buffer.ReleaseTemporaryRT(m_dir_shadow_atlas_id);
-        ExecuteBuffer();
     }
 
     private void RenderDirectionalLightShadows()
@@ -73,11 +76,12 @@ public class Shadows
         int split = m_shadowed_dir_lights_count <= 1 ? 1 : 2;
         int tile_size = atlas_size / split;
 
-        for (int i = 0; i < m_shadowed_dir_lights.Length; ++i)
+        for (int i = 0; i < m_shadowed_dir_lights_count; ++i)
         {
             RenderDirectionalLightShadows(i, split, tile_size);
         }
 
+        m_cmd_buffer.SetGlobalMatrixArray(m_dir_shadow_matrices_id, m_dir_shadow_matrices);
         m_cmd_buffer.EndSample(m_buffer_name);
         ExecuteBuffer();
     }
@@ -94,18 +98,21 @@ public class Shadows
             out Matrix4x4 proj_matrix,
             out ShadowSplitData shadow_split_data);
         set.splitData = shadow_split_data;
-        SetTileViewport(index, split, tile_size);
+        Vector2 offset = SetTileViewport(index, split, tile_size);
         m_cmd_buffer.SetViewProjectionMatrices(view_matrix, proj_matrix);
+        //m_dir_shadow_matrices[index] = proj_matrix * view_matrix;
+        m_dir_shadow_matrices[index] = Convert2AtlasMatrix(proj_matrix * view_matrix, offset, split);
         ExecuteBuffer();
         // DrawShadows only renders objects with materials that have a "ShadowCaster" pass
         m_context.DrawShadows(ref set);
     }
 
-    private void SetTileViewport(int index, int split, int tile_size)
+    private Vector2 SetTileViewport(int index, int split, int tile_size)
     {
         Vector2 offset = new Vector2(index % split, index / split);
         m_cmd_buffer.SetViewport(new Rect(offset.x * tile_size, offset.y * tile_size, 
             tile_size, tile_size));
+        return offset;
     }
 
     public void ReserveDirectionalShadows(Light light, int light_idx)
@@ -126,5 +133,74 @@ public class Shadows
     {
         m_context.ExecuteCommandBuffer(m_cmd_buffer);
         m_cmd_buffer.Clear();
+    }
+
+    /// <summary>
+    /// 世界空间转ShadowMap空间
+    /// </summary>
+    /// <param name="m"></param>
+    /// <param name="offset"></param>
+    /// <param name="split"></param>
+    /// <returns></returns>
+    private Matrix4x4 Convert2AtlasMatrix(Matrix4x4 m, Vector2 offset, int split)
+    {
+        if (SystemInfo.usesReversedZBuffer)
+        {
+            // 一开始还想不通为什么设置列向量取反，还以为和左乘右乘矩阵有关系
+            // 其实这里就是左乘（Mat * Point），左乘的最终结果里的z分量是由Mat的第三行和顶点的xyzw组合相加的
+            // 所以取反第三行就能有取反最终结果里z分量的效果
+            m.m20 = -m.m20;
+            m.m21 = -m.m21;
+            m.m22 = -m.m22;
+            m.m23 = -m.m23;
+        }
+
+        // [-1, 1] => [0, 1] 
+        // Matrix:
+        // | 0.5    0       0       0.5 |
+        // | 0      0.5     0       0.5 |
+        // | 0      0       0.5     0.5 |
+        // | 0      0       0       1   |
+        //m.m00 = 0.5f * (m.m00 + m.m30);
+        //m.m01 = 0.5f * (m.m01 + m.m31);
+        //m.m02 = 0.5f * (m.m02 + m.m32);
+        //m.m03 = 0.5f * (m.m03 + m.m33);
+        //m.m10 = 0.5f * (m.m10 + m.m30);
+        //m.m11 = 0.5f * (m.m11 + m.m31);
+        //m.m12 = 0.5f * (m.m12 + m.m32);
+        //m.m13 = 0.5f * (m.m13 + m.m33);
+        //m.m20 = 0.5f * (m.m20 + m.m30);
+        //m.m21 = 0.5f * (m.m21 + m.m31);
+        //m.m22 = 0.5f * (m.m22 + m.m32);
+        //m.m23 = 0.5f * (m.m23 + m.m33);
+
+        // 因为ShadowMap被Split了，所以要从[0,1] -> 对应的分区
+        // Matrix: (scale = 0.5, tmpOffset = 0.5) 但是本函数的参数中的offset传进来的是0或者1，具体可查看SetTileViewport
+        // (tmpOffset = offset / 2)
+        // | scale  0       0   tmpOffset.x |
+        // | 0      scale   0   tmpOffset.y |
+        // | 0      0       1   0           |
+        // | 0      0       0   1           |
+        //float scale = 1f / split;
+        //m.m00 = (m.m00 + offset.x * m.m30) * scale;
+        //m.m01 = (m.m01 + offset.x * m.m31) * scale;
+        //m.m02 = (m.m02 + offset.x * m.m32) * scale;
+        //m.m03 = (m.m03 + offset.x * m.m33) * scale;
+        //m.m10 = (m.m10 + offset.y * m.m30) * scale;
+        //m.m11 = (m.m11 + offset.y * m.m31) * scale;
+        //m.m12 = (m.m12 + offset.y * m.m32) * scale;
+        //m.m13 = (m.m13 + offset.y * m.m33) * scale;
+
+        // 合并所有矩阵之后
+        float scale = 1f / split;
+        m.m00 = (0.5f * (m.m00 + m.m30) + offset.x * m.m30) * scale;
+        m.m01 = (0.5f * (m.m01 + m.m31) + offset.x * m.m31) * scale;
+        m.m02 = (0.5f * (m.m02 + m.m32) + offset.x * m.m32) * scale;
+        m.m03 = (0.5f * (m.m03 + m.m33) + offset.x * m.m33) * scale;
+        m.m10 = (0.5f * (m.m10 + m.m30) + offset.y * m.m30) * scale;
+        m.m11 = (0.5f * (m.m11 + m.m31) + offset.y * m.m31) * scale;
+        m.m12 = (0.5f * (m.m12 + m.m32) + offset.y * m.m32) * scale;
+        m.m13 = (0.5f * (m.m13 + m.m33) + offset.y * m.m33) * scale;
+        return m;
     }
 }
