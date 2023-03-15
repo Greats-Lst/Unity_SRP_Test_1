@@ -10,11 +10,13 @@ public class Lighting
 
     // 以下Property会在Light.hlsl里定义
     private static int m_dir_light_count = Shader.PropertyToID("_DirectionLightMaxCount");
-    private static int m_directional_light_color_tags = Shader.PropertyToID("_DirectionalLightColors");
-    private static int m_directional_light_dir_tags = Shader.PropertyToID("_DirectionalLightDirections");
+    private static int m_dir_light_color_tags = Shader.PropertyToID("_DirectionalLightColors");
+    private static int m_dir_light_dir_tags = Shader.PropertyToID("_DirectionalLightDirections");
+    private static int m_dir_light_shadow_data_tags = Shader.PropertyToID("_DirectionalLightShadowData");
 
     private static Vector4[] m_direction_light_colors = new Vector4[m_max_directional_light_count];
     private static Vector4[] m_direction_light_dirs = new Vector4[m_max_directional_light_count];
+    private static Vector4[] m_direction_light_shadow_data = new Vector4[m_max_directional_light_count];
 
     private CommandBuffer m_cmd_buffer = new CommandBuffer() { name = m_buffer_name };
 
@@ -65,8 +67,9 @@ public class Lighting
         }
 
         m_cmd_buffer.SetGlobalInt(m_dir_light_count, dir_light_count);
-        m_cmd_buffer.SetGlobalVectorArray(m_directional_light_color_tags, m_direction_light_colors);
-        m_cmd_buffer.SetGlobalVectorArray(m_directional_light_dir_tags, m_direction_light_dirs);
+        m_cmd_buffer.SetGlobalVectorArray(m_dir_light_color_tags, m_direction_light_colors);
+        m_cmd_buffer.SetGlobalVectorArray(m_dir_light_dir_tags, m_direction_light_dirs);
+        m_cmd_buffer.SetGlobalVectorArray(m_dir_light_shadow_data_tags, m_direction_light_shadow_data);
     }
 
     private void SetupDirectionLights(int index, ref VisibleLight visible_light)
@@ -76,7 +79,7 @@ public class Lighting
             return;
         }
 
-        m_shadow.ReserveDirectionalShadows(visible_light.light, index);
+        m_direction_light_shadow_data[index] = m_shadow.ReserveDirectionalShadows(visible_light.light, index);
         m_direction_light_colors[index] = visible_light.finalColor.linear;
         // 这里很有意思，localToWorldMaxtrix以[x y z w]来表示的话，那么其实这个矩阵就是该对象的3个基向量在世界坐标系中的表示
         // 怎么理解呢，比如该对象没有旋转没有位移没有缩放，那么其z基向量在世界坐标系中的表示是（0，0，1），其z基向量在模型坐标系中的表示是（0，0，1）

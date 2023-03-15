@@ -7,19 +7,31 @@ CBUFFER_START(_CustomLight)
 	int _DirectionLightMaxCount;
 	float4 _DirectionalLightColors[MAX_DIRECTION_LIGHT_COUNT];
 	float4 _DirectionalLightDirections[MAX_DIRECTION_LIGHT_COUNT];
+	float4 _DirectionalLightShadowData[MAX_DIRECTION_LIGHT_COUNT];
 CBUFFER_END
 
 struct Light
 {
 	float3 color;
 	float3 direction;
+	float attenuation;
 };
 
-Light GetDirectionLight(int idx)
+DirectionalShadowData GetDirectionalShadowData(int idx)
+{
+	DirectionalShadowData data;
+	data.strength = _DirectionalLightShadowData[idx].x;
+	data.tile_idx = _DirectionalLightShadowData[idx].y;
+	return data;
+}
+
+Light GetDirectionLight(int idx, Surface surface_ws)
 {
 	Light light;
 	light.color = _DirectionalLightColors[idx];
 	light.direction = _DirectionalLightDirections[idx];
+	DirectionalShadowData shadow_data = GetDirectionalShadowData(idx);
+	light.attenuation = GetDirectionalShadowAttenuation(shadow_data, surface_ws);
 	return light;
 }
 

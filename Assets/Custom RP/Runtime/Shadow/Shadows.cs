@@ -15,6 +15,8 @@ public class Shadows
     struct ShadowedDirectionalLight
     {
         public int VisibleLightIndex;
+
+        public ShadowedDirectionalLight(int idx) { VisibleLightIndex = idx; }
     }
 
     private CommandBuffer m_cmd_buffer = new CommandBuffer() { name = m_buffer_name };
@@ -115,18 +117,18 @@ public class Shadows
         return offset;
     }
 
-    public void ReserveDirectionalShadows(Light light, int light_idx)
+    public Vector2 ReserveDirectionalShadows(Light light, int light_idx)
     {
         if (m_shadowed_dir_lights_count < m_max_directional_light_shadow_count &&
             light.shadows != LightShadows.None &&
             light.shadowStrength > 0f &&
             m_culling_res.GetShadowCasterBounds(light_idx, out Bounds out_bounds))
         {
-            m_shadowed_dir_lights[m_shadowed_dir_lights_count++] = new ShadowedDirectionalLight()
-            {
-                VisibleLightIndex = light_idx
-            };
+            m_shadowed_dir_lights[m_shadowed_dir_lights_count] = new ShadowedDirectionalLight(light_idx);
+            return new Vector2(light.shadowStrength, m_shadowed_dir_lights_count++);
         }
+
+        return Vector2.zero;
     }
 
     private void ExecuteBuffer()
@@ -201,6 +203,10 @@ public class Shadows
         m.m11 = (0.5f * (m.m11 + m.m31) + offset.y * m.m31) * scale;
         m.m12 = (0.5f * (m.m12 + m.m32) + offset.y * m.m32) * scale;
         m.m13 = (0.5f * (m.m13 + m.m33) + offset.y * m.m33) * scale;
+        m.m20 = 0.5f * (m.m20 + m.m30);
+        m.m21 = 0.5f * (m.m21 + m.m31);
+        m.m22 = 0.5f * (m.m22 + m.m32);
+        m.m23 = 0.5f * (m.m23 + m.m33);
         return m;
     }
 }

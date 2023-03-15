@@ -5,6 +5,8 @@ struct Surface
 {
 	float3 color;
 
+	float3 position;
+
 	float3 view_direction;
 
 	// 这里是没有管normal到底是哪个空间坐标的，

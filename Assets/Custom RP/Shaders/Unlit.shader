@@ -25,6 +25,25 @@ Shader "Custom RP/Unlit" {
 			#include "UnlitPass.hlsl" // NOTE：这里少这个空格在Unity里不能编译通过！
 			ENDHLSL
 		}
+
+		//Pass
+		//{
+		//	Tags
+		//	{
+		//		"LightMode" = "ShadowCaster"
+		//	}
+
+		//	ColorMask 0
+
+		//	HLSLPROGRAM
+		//	#pragma target 3.5
+		//	#pragma shader_feature _CLIPPING
+		//	#pragma multi_compile_instancing
+		//	#pragma vertex ShadowCasterPassVertex
+		//	#pragma fragment ShadowCasterPassFragment
+		//	#include "ShadowCasterPass.hlsl" // NOTE：这里少这个空格在Unity里不能编译通过！
+		//	ENDHLSL
+		//}
 	}
 
 	CustomEditor "CustomShaderGUI"
