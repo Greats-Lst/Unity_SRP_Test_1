@@ -7,10 +7,11 @@ public class Shadows
 {
     private const string m_buffer_name = "Shadows";
     private const int m_max_directional_light_shadow_count = 4;
+    private const int m_max_cascade = 4;
     private static int m_dir_shadow_atlas_id = Shader.PropertyToID("_DirectionalShadowAtlas");
     private static int m_dir_shadow_matrices_id = Shader.PropertyToID("_DirectionalShadowMatrices");
 
-    private static Matrix4x4[] m_dir_shadow_matrices = new Matrix4x4[m_max_directional_light_shadow_count];
+    private static Matrix4x4[] m_dir_shadow_matrices = new Matrix4x4[m_max_directional_light_shadow_count * m_max_cascade];
 
     struct ShadowedDirectionalLight
     {
@@ -75,7 +76,8 @@ public class Shadows
         m_cmd_buffer.BeginSample(m_buffer_name);
         ExecuteBuffer();
 
-        int split = m_shadowed_dir_lights_count <= 1 ? 1 : 2;
+        int tiles = m_shadowed_dir_lights_count * m_shadow_settings.DirectionalShadow.CascadeCount; // 首先得出会有几张阴影图
+        int split = tiles <= 1 ? 1 : tiles <= 4 ? 2 : 4; // 根据阴影图的张数得出每张图的分辨率为多少 
         int tile_size = atlas_size / split;
 
         for (int i = 0; i < m_shadowed_dir_lights_count; ++i)
@@ -90,27 +92,37 @@ public class Shadows
 
     private void RenderDirectionalLightShadows(int index, int split, int tile_size)
     {
-        var light = m_shadowed_dir_lights[index];
+        ShadowedDirectionalLight light = m_shadowed_dir_lights[index];
         ShadowDrawingSettings set = new ShadowDrawingSettings(m_culling_res, light.VisibleLightIndex);
-        m_culling_res.ComputeDirectionalShadowMatricesAndCullingPrimitives(
-            light.VisibleLightIndex,
-            0, 1, Vector3.zero,
-            tile_size, 0,
-            out Matrix4x4 view_matrix,
-            out Matrix4x4 proj_matrix,
-            out ShadowSplitData shadow_split_data);
-        set.splitData = shadow_split_data;
-        Vector2 offset = SetTileViewport(index, split, tile_size);
-        m_cmd_buffer.SetViewProjectionMatrices(view_matrix, proj_matrix);
-        //m_dir_shadow_matrices[index] = proj_matrix * view_matrix;
-        m_dir_shadow_matrices[index] = Convert2AtlasMatrix(proj_matrix * view_matrix, offset, split);
-        ExecuteBuffer();
-        // DrawShadows only renders objects with materials that have a "ShadowCaster" pass
-        m_context.DrawShadows(ref set);
+        int cascade_count = m_shadow_settings.DirectionalShadow.CascadeCount;
+        int tile_offset = index * cascade_count; // 这盏灯在阴影级联图集合数组中的起始下标（想象成二维数组的一维表示）
+        Vector3 ratios = m_shadow_settings.DirectionalShadow.CascadeRatio;
+
+        for (int i = 0; i < cascade_count; ++i)
+        {
+            m_culling_res.ComputeDirectionalShadowMatricesAndCullingPrimitives(
+                light.VisibleLightIndex,
+                //0, 1, Vector3.zero,
+                i, cascade_count, ratios,
+                tile_size, 0,
+                out Matrix4x4 view_matrix,
+                out Matrix4x4 proj_matrix,
+                out ShadowSplitData shadow_split_data);
+            set.splitData = shadow_split_data;
+            int tile_idx = tile_offset + i;
+            Vector2 offset = SetTileViewport(tile_idx, split, tile_size);
+            m_cmd_buffer.SetViewProjectionMatrices(view_matrix, proj_matrix);
+            m_dir_shadow_matrices[tile_idx] = Convert2AtlasMatrix(proj_matrix * view_matrix, offset, split);
+            ExecuteBuffer();
+            // DrawShadows only renders objects with materials that have a "ShadowCaster" pass
+            m_context.DrawShadows(ref set);
+        }
+
     }
 
     private Vector2 SetTileViewport(int index, int split, int tile_size)
     {
+        // 可以理解为 index是 二维数组的一维表示 的下标，而split决定了需要把这个一维数组分割成split列的二维数组，tile_size则是每个小方块的resolution
         Vector2 offset = new Vector2(index % split, index / split);
         m_cmd_buffer.SetViewport(new Rect(offset.x * tile_size, offset.y * tile_size, 
             tile_size, tile_size));
@@ -125,7 +137,8 @@ public class Shadows
             m_culling_res.GetShadowCasterBounds(light_idx, out Bounds out_bounds))
         {
             m_shadowed_dir_lights[m_shadowed_dir_lights_count] = new ShadowedDirectionalLight(light_idx);
-            return new Vector2(light.shadowStrength, m_shadowed_dir_lights_count++);
+            return new Vector2(light.shadowStrength, 
+                m_shadow_settings.DirectionalShadow.CascadeCount * m_shadowed_dir_lights_count++);
         }
 
         return Vector2.zero;
