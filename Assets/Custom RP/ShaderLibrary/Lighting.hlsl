@@ -17,9 +17,10 @@ float3 GetLighting(Surface surface_ws, BRDF brdf)
 	//return s.normal.y * s.color;
 
 	float3 color = float3(0.0, 0.0, 0.0);
+	ShadowData shadow_data = GetShadowData(surface_ws);
 	for (int i = 0; i < MAX_DIRECTION_LIGHT_COUNT; ++i)
 	{
-		Light l = GetDirectionLight(i, surface_ws);
+		Light l = GetDirectionLight(i, surface_ws, shadow_data);
 		color += GetLighting(surface_ws, brdf, l);
 	}
 	return color;
