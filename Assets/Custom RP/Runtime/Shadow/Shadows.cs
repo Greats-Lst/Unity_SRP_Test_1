@@ -90,8 +90,11 @@ public class Shadows
         }
 
         m_cmd_buffer.SetGlobalInt(m_cascade_count_id, m_shadow_settings.DirectionalShadow.CascadeCount);
-        m_cmd_buffer.SetGlobalVector(m_shadow_distance_fade_id, new Vector4(1.0f / m_shadow_settings.MaxDistance,
-            1.0f / m_shadow_settings.DistanceFade));
+        float f = 1f - m_shadow_settings.DirectionalShadow.CascadeFade;
+        m_cmd_buffer.SetGlobalVector(m_shadow_distance_fade_id, new Vector4(
+            1.0f / m_shadow_settings.MaxDistance,
+            1.0f / m_shadow_settings.DistanceFade,
+            1.0f / (1.0f - f * f)));
         m_cmd_buffer.SetGlobalVectorArray(m_cascade_culling_spheres_id, m_cascade_culling_spheres);
         m_cmd_buffer.SetGlobalMatrixArray(m_dir_shadow_matrices_id, m_dir_shadow_matrices);
         m_cmd_buffer.EndSample(m_buffer_name);

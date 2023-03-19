@@ -9,7 +9,7 @@ public class ShadowSettings
     public float MaxDistance = 100f;
 
     /// <summary>
-    /// 用于阴影距离过渡
+    /// 用于阴影距离Fade
     /// 公式为：(1-d/m)/f  {d=depth; m=MaxDistance; f=DistanceFade}
     /// </summary>
     [Range(0.001f, 1f)]
@@ -36,6 +36,14 @@ public class ShadowSettings
         [Range(0, 1)]
         public float CascadeRatio1, CascadeRatio2, CascadeRatio3;
 
+        /// <summary>
+        /// 最后一级级联阴影Fade
+        /// 由于在级联球体里使用的是半径的平方，所以这里的Fade公式也有相应的变化
+        /// 公式为：(1- (d*d)/(r*r)) / (1 - (1-f)*(1-f))  {d=depth; r=radius; f=CascadeFade}
+        /// </summary>
+        [Range(0.001f, 1f)]
+        public float CascadeFade;
+
         public Vector3 CascadeRatio => new Vector3(CascadeRatio1, CascadeRatio2, CascadeRatio3);
     }
 
@@ -46,5 +54,6 @@ public class ShadowSettings
         CascadeRatio1 = 0.1f,
         CascadeRatio2 = 0.25f,
         CascadeRatio3 = 0.5f,
+        CascadeFade = 0.1f,
     }; 
 }
