@@ -5,8 +5,15 @@ using UnityEngine;
 [System.Serializable]
 public class ShadowSettings
 {
-    [Min(0f)]
+    [Min(0.001f)]
     public float MaxDistance = 100f;
+
+    /// <summary>
+    /// 用于阴影距离过渡
+    /// 公式为：(1-d/m)/f  {d=depth; m=MaxDistance; f=DistanceFade}
+    /// </summary>
+    [Range(0.001f, 1f)]
+    public float DistanceFade = 0.1f;
 
     public enum TextureSize
     {

@@ -68,6 +68,7 @@ float4 LitPassFragment(Varyings input) : SV_TARGET
 	Surface s;
 	s.color = res_color_1.rgb;
 	s.position = input.positionWS;
+	s.depth = -TransformWorldToView(input.positionWS).z;
 	s.normal = normal;
 	s.alpha = res_color_1.a;
 	s.metalic = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Metalic);
