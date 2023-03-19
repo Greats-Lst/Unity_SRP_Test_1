@@ -11,6 +11,7 @@ SAMPLER_CMP(SHADOW_SAMPLER);
 CBUFFER_START(_CustomShadows)
 	int _CascadeCount;
 	float4 _ShadowDistanceFade;
+	float4 _CascadeData[MAX_CASCADE_COUNT];
 	float4 _CascadeCullingSpheres[MAX_CASCADE_COUNT];
 	float4x4 _DirectionalShadowMatrices[MAX_SHADOWED_DIRECTIONAL_LIGHT_COUNT * MAX_CASCADE_COUNT];
 CBUFFER_END
@@ -44,7 +45,7 @@ ShadowData GetShadowData(Surface surface_ws)
 		{
 			if (i == _CascadeCount - 1)
 			{
-				res.strength *= FadedShadowStrength(dis_sqr, 1 / sphere.w, _ShadowDistanceFade.z);
+				res.strength *= FadedShadowStrength(dis_sqr, _CascadeData[i].x, _ShadowDistanceFade.z);
 			}
 			break;
 		}
@@ -62,15 +63,16 @@ float SampleDirectionalShadowAtlas(float3 position_sts) // sts == shadow tile sp
 	return SAMPLE_TEXTURE2D_SHADOW(_DirectionalShadowAtlas, SHADOW_SAMPLER, position_sts);
 }
 
-float GetDirectionalShadowAttenuation(DirectionalShadowData data, Surface surface_ws) // world space
+float GetDirectionalShadowAttenuation(DirectionalShadowData direction_data, ShadowData shadow_data, Surface surface_ws) // world space
 {
-	if (data.strength <= 0.0f)
+	if (direction_data.strength <= 0.0f)
 	{
 		return 1.0f;
 	}
 
-	float3 position_sts = mul(_DirectionalShadowMatrices[data.tile_idx], float4(surface_ws.position, 1.0)).xyz;
+	float3 world_pos = surface_ws.position + surface_ws.normal * _CascadeData[shadow_data.cascade_idx].y;
+	float3 position_sts = mul(_DirectionalShadowMatrices[direction_data.tile_idx], float4(world_pos, 1.0)).xyz;
 	float shadow = SampleDirectionalShadowAtlas(position_sts);
-	return lerp(1.0f, shadow, data.strength);
+	return lerp(1.0f, shadow, direction_data.strength);
 }
 #endif

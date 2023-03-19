@@ -12,10 +12,12 @@ public class Shadows
     private static int m_dir_shadow_matrices_id = Shader.PropertyToID("_DirectionalShadowMatrices");
     private static int m_cascade_count_id = Shader.PropertyToID("_CascadeCount");
     private static int m_cascade_culling_spheres_id = Shader.PropertyToID("_CascadeCullingSpheres");
+    private static int m_cascade_data_id = Shader.PropertyToID("_CascadeData");
     private static int m_shadow_distance_fade_id = Shader.PropertyToID("_ShadowDistanceFade");
 
     private static Matrix4x4[] m_dir_shadow_matrices = new Matrix4x4[m_max_directional_light_shadow_count * m_max_cascade];
     private static Vector4[] m_cascade_culling_spheres = new Vector4[m_max_cascade];
+    private static Vector4[] m_cascade_data = new Vector4[m_max_cascade];
 
     struct ShadowedDirectionalLight
     {
@@ -96,6 +98,7 @@ public class Shadows
             1.0f / m_shadow_settings.DistanceFade,
             1.0f / (1.0f - f * f)));
         m_cmd_buffer.SetGlobalVectorArray(m_cascade_culling_spheres_id, m_cascade_culling_spheres);
+        m_cmd_buffer.SetGlobalVectorArray(m_cascade_data_id, m_cascade_data);
         m_cmd_buffer.SetGlobalMatrixArray(m_dir_shadow_matrices_id, m_dir_shadow_matrices);
         m_cmd_buffer.EndSample(m_buffer_name);
         ExecuteBuffer();
@@ -123,9 +126,7 @@ public class Shadows
             set.splitData = shadow_split_data;
             if (index == 0)
             {
-                Vector4 culling_sphere = shadow_split_data.cullingSphere;
-                culling_sphere.w *= culling_sphere.w;
-                m_cascade_culling_spheres[i] = culling_sphere;
+                SetCascadeData(i, shadow_split_data.cullingSphere, tile_size);
             }
             int tile_idx = tile_offset + i;
             m_dir_shadow_matrices[tile_idx] = Convert2AtlasMatrix(proj_matrix * view_matrix,
@@ -135,6 +136,15 @@ public class Shadows
             // DrawShadows only renders objects with materials that have a "ShadowCaster" pass
             m_context.DrawShadows(ref set);
         }
+    }
+
+    private void SetCascadeData(int index, Vector4 culling_sphere, int tile_size)
+    {
+        float texelSize = 2.0f * culling_sphere.w / tile_size; // 每级级联阴影的单张ShadowMap里单个像素对应多少世界坐标距离
+        culling_sphere.w *= culling_sphere.w;
+        m_cascade_culling_spheres[index] = culling_sphere;
+        m_cascade_data[index] = new Vector4(1.0f / culling_sphere.w,
+            texelSize * 1.4142f);
     }
 
     private Vector2 SetTileViewport(int index, int split, int tile_size)
