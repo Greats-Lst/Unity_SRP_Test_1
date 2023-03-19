@@ -20,6 +20,7 @@ struct DirectionalShadowData
 {
 	float strength;
 	int tile_idx;
+	float normal_bias;
 };
 
 struct ShadowData
@@ -70,7 +71,7 @@ float GetDirectionalShadowAttenuation(DirectionalShadowData direction_data, Shad
 		return 1.0f;
 	}
 
-	float3 world_pos = surface_ws.position + surface_ws.normal * _CascadeData[shadow_data.cascade_idx].y;
+	float3 world_pos = surface_ws.position + surface_ws.normal * (direction_data.normal_bias * _CascadeData[shadow_data.cascade_idx].y);
 	float3 position_sts = mul(_DirectionalShadowMatrices[direction_data.tile_idx], float4(world_pos, 1.0)).xyz;
 	float shadow = SampleDirectionalShadowAtlas(position_sts);
 	return lerp(1.0f, shadow, direction_data.strength);

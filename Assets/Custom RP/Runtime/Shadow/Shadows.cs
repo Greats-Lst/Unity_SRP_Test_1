@@ -22,8 +22,12 @@ public class Shadows
     struct ShadowedDirectionalLight
     {
         public int VisibleLightIndex;
+        public float SlopeScaleBias;
 
-        public ShadowedDirectionalLight(int idx) { VisibleLightIndex = idx; }
+        public ShadowedDirectionalLight(int idx, float bias) { 
+            VisibleLightIndex = idx;
+            SlopeScaleBias = bias;
+        }
     }
 
     private CommandBuffer m_cmd_buffer = new CommandBuffer() { name = m_buffer_name };
@@ -132,9 +136,11 @@ public class Shadows
             m_dir_shadow_matrices[tile_idx] = Convert2AtlasMatrix(proj_matrix * view_matrix,
                 SetTileViewport(tile_idx, split, tile_size), split);
             m_cmd_buffer.SetViewProjectionMatrices(view_matrix, proj_matrix);
+            m_cmd_buffer.SetGlobalDepthBias(0f, light.SlopeScaleBias);
             ExecuteBuffer();
             // DrawShadows only renders objects with materials that have a "ShadowCaster" pass
             m_context.DrawShadows(ref set);
+            m_cmd_buffer.SetGlobalDepthBias(0f, 0f);
         }
     }
 
@@ -156,19 +162,20 @@ public class Shadows
         return offset;
     }
 
-    public Vector2 ReserveDirectionalShadows(Light light, int light_idx)
+    public Vector3 ReserveDirectionalShadows(Light light, int light_idx)
     {
         if (m_shadowed_dir_lights_count < m_max_directional_light_shadow_count &&
             light.shadows != LightShadows.None &&
             light.shadowStrength > 0f &&
             m_culling_res.GetShadowCasterBounds(light_idx, out Bounds out_bounds))
         {
-            m_shadowed_dir_lights[m_shadowed_dir_lights_count] = new ShadowedDirectionalLight(light_idx);
-            return new Vector2(light.shadowStrength, 
-                m_shadow_settings.DirectionalShadow.CascadeCount * m_shadowed_dir_lights_count++);
+            m_shadowed_dir_lights[m_shadowed_dir_lights_count] = new ShadowedDirectionalLight(light_idx, light.shadowBias);
+            return new Vector3(light.shadowStrength, 
+                m_shadow_settings.DirectionalShadow.CascadeCount * m_shadowed_dir_lights_count++,
+                light.shadowNormalBias);
         }
 
-        return Vector2.zero;
+        return Vector3.zero;
     }
 
     private void ExecuteBuffer()
