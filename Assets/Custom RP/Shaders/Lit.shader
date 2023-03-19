@@ -30,6 +30,7 @@ Shader "Custom RP/Lit" {
 			ZWrite [_ZWrite]
 			HLSLPROGRAM
 			#pragma target 3.5
+			#pragma multi_compile _ _DIRECTIONAL_PCF3 _DIRECTIONAL_PCF5 _DIRECTIONAL_PCF7
 			#pragma multi_compile_instancing
 			#pragma shader_feature _CLIPPING
 			#pragma shader_feature _APPLYALPHATODIFFUSE

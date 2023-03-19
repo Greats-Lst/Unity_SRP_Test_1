@@ -15,7 +15,7 @@ public class ShadowSettings
     [Range(0.001f, 1f)]
     public float DistanceFade = 0.1f;
 
-    public enum TextureSize
+    public enum ETextureSize
     {
         _256 = 256,
         _512 = 512,
@@ -25,10 +25,15 @@ public class ShadowSettings
         _8192 = 8192,
     }
 
+    public enum EFilterMode
+    {
+        PCF2x2, PCF3x3, PCF5x5, PCF7x7,
+    }
+
     [System.Serializable]
     public struct Directional
     {
-        public TextureSize AtlasSize;
+        public ETextureSize AtlasSize;
 
         [Range(1, 4)]
         public int CascadeCount;
@@ -44,16 +49,19 @@ public class ShadowSettings
         [Range(0.001f, 1f)]
         public float CascadeFade;
 
+        public EFilterMode PCFFilterMode;
+
         public Vector3 CascadeRatio => new Vector3(CascadeRatio1, CascadeRatio2, CascadeRatio3);
     }
 
     public Directional DirectionalShadow = new Directional()
     {
-        AtlasSize = TextureSize._1024,
+        AtlasSize = ETextureSize._1024,
         CascadeCount = 4,
         CascadeRatio1 = 0.1f,
         CascadeRatio2 = 0.25f,
         CascadeRatio3 = 0.5f,
         CascadeFade = 0.1f,
+        PCFFilterMode = EFilterMode.PCF2x2,
     }; 
 }

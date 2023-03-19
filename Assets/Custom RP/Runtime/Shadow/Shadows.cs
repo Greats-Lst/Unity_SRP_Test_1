@@ -13,7 +13,15 @@ public class Shadows
     private static int m_cascade_count_id = Shader.PropertyToID("_CascadeCount");
     private static int m_cascade_culling_spheres_id = Shader.PropertyToID("_CascadeCullingSpheres");
     private static int m_cascade_data_id = Shader.PropertyToID("_CascadeData");
+    private static int m_shadow_atlas_size_id = Shader.PropertyToID("_ShadowAtlasSize");
     private static int m_shadow_distance_fade_id = Shader.PropertyToID("_ShadowDistanceFade");
+
+    private static string[] m_directional_filter_keywords =
+    {
+        "_DIRECTIONAL_PCF3",
+        "_DIRECTIONAL_PCF5",
+        "_DIRECTIONAL_PCF7",
+    };
 
     private static Matrix4x4[] m_dir_shadow_matrices = new Matrix4x4[m_max_directional_light_shadow_count * m_max_cascade];
     private static Vector4[] m_cascade_culling_spheres = new Vector4[m_max_cascade];
@@ -58,7 +66,7 @@ public class Shadows
     {
         if (m_shadowed_dir_lights_count > 0)
         {
-            RenderDirectionalLightShadows();
+            RenderDirectionalShadows();
         }
         else
         {
@@ -67,7 +75,7 @@ public class Shadows
         }
     }
 
-    private void RenderDirectionalLightShadows()
+    private void RenderDirectionalShadows()
     {
         int atlas_size = (int)m_shadow_settings.DirectionalShadow.AtlasSize;
         m_cmd_buffer.GetTemporaryRT(m_dir_shadow_atlas_id, atlas_size, atlas_size, 
@@ -88,7 +96,7 @@ public class Shadows
 
         for (int i = 0; i < m_shadowed_dir_lights_count; ++i)
         {
-            RenderDirectionalLightShadows(i, split, tile_size);
+            RenderDirectionalShadows(i, split, tile_size);
         }
 
         m_cmd_buffer.SetGlobalInt(m_cascade_count_id, m_shadow_settings.DirectionalShadow.CascadeCount);
@@ -100,11 +108,15 @@ public class Shadows
         m_cmd_buffer.SetGlobalVectorArray(m_cascade_culling_spheres_id, m_cascade_culling_spheres);
         m_cmd_buffer.SetGlobalVectorArray(m_cascade_data_id, m_cascade_data);
         m_cmd_buffer.SetGlobalMatrixArray(m_dir_shadow_matrices_id, m_dir_shadow_matrices);
+
+        SetPCFKeyword();
+        m_cmd_buffer.SetGlobalVector(m_shadow_atlas_size_id, new Vector4(atlas_size, 1.0f / atlas_size));
+
         m_cmd_buffer.EndSample(m_buffer_name);
         ExecuteBuffer();
     }
 
-    private void RenderDirectionalLightShadows(int index, int split, int tile_size)
+    private void RenderDirectionalShadows(int index, int split, int tile_size)
     {
         ShadowedDirectionalLight light = m_shadowed_dir_lights[index];
         ShadowDrawingSettings set = new ShadowDrawingSettings(m_culling_res, light.VisibleLightIndex);
@@ -140,13 +152,31 @@ public class Shadows
         }
     }
 
+    private void SetPCFKeyword()
+    {
+        int index = (int)m_shadow_settings.DirectionalShadow.PCFFilterMode - 1;
+        for (int i = 0; i < m_directional_filter_keywords.Length; ++i)
+        {
+            if (i == index)
+            {
+                m_cmd_buffer.EnableShaderKeyword(m_directional_filter_keywords[i]);
+            }
+            else
+            {
+                m_cmd_buffer.DisableShaderKeyword(m_directional_filter_keywords[i]);
+            }
+        }
+    }
+
     private void SetCascadeData(int index, Vector4 culling_sphere, int tile_size)
     {
-        float texelSize = 2.0f * culling_sphere.w / tile_size; // 每级级联阴影的单张ShadowMap里单个像素对应多少世界坐标距离
+        float texel_size = 2.0f * culling_sphere.w / tile_size; // 每级级联阴影的单张ShadowMap里单个像素对应多少世界坐标距离
+        float filter_size = texel_size * ((float)m_shadow_settings.DirectionalShadow.PCFFilterMode + 1);
+        culling_sphere.w -= filter_size;
         culling_sphere.w *= culling_sphere.w;
         m_cascade_culling_spheres[index] = culling_sphere;
         m_cascade_data[index] = new Vector4(1.0f / culling_sphere.w,
-            texelSize * 1.4142f);
+            filter_size * 1.4142f);
     }
 
     private Vector2 SetTileViewport(int index, int split, int tile_size)
