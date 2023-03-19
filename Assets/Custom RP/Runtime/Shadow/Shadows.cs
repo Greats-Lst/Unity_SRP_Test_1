@@ -23,11 +23,7 @@ public class Shadows
     {
         public int VisibleLightIndex;
         public float SlopeScaleBias;
-
-        public ShadowedDirectionalLight(int idx, float bias) { 
-            VisibleLightIndex = idx;
-            SlopeScaleBias = bias;
-        }
+        public float ShadowNearPlane;
     }
 
     private CommandBuffer m_cmd_buffer = new CommandBuffer() { name = m_buffer_name };
@@ -122,7 +118,7 @@ public class Shadows
                 light.VisibleLightIndex,
                 //0, 1, Vector3.zero,
                 i, cascade_count, ratios,
-                tile_size, 0,
+                tile_size, light.ShadowNearPlane,
                 out Matrix4x4 view_matrix,
                 out Matrix4x4 proj_matrix,
                 out ShadowSplitData shadow_split_data);
@@ -169,7 +165,11 @@ public class Shadows
             light.shadowStrength > 0f &&
             m_culling_res.GetShadowCasterBounds(light_idx, out Bounds out_bounds))
         {
-            m_shadowed_dir_lights[m_shadowed_dir_lights_count] = new ShadowedDirectionalLight(light_idx, light.shadowBias);
+            m_shadowed_dir_lights[m_shadowed_dir_lights_count] = new ShadowedDirectionalLight() { 
+                VisibleLightIndex = light_idx,
+                SlopeScaleBias = light.shadowBias,
+                ShadowNearPlane = light.shadowNearPlane,
+            };
             return new Vector3(light.shadowStrength, 
                 m_shadow_settings.DirectionalShadow.CascadeCount * m_shadowed_dir_lights_count++,
                 light.shadowNormalBias);
