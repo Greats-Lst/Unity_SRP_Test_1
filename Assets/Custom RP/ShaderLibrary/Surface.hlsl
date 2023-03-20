@@ -20,6 +20,8 @@ struct Surface
 	float metalic;
 
 	float smoothness;
+
+	float dither;
 };
 
 #endif

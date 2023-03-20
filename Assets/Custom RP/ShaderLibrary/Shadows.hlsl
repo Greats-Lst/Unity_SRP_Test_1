@@ -72,10 +72,22 @@ ShadowData GetShadowData(Surface surface_ws)
 			break;
 		}
 	}
+
 	if (i == _CascadeCount)
 	{
 		res.strength = 0.0;
 	}
+#if defined(_CASCADE_BLEND_DITHER)
+	else if (res.cascade_blend < surface_ws.dither)
+	{
+		i += 1;
+	}
+#endif
+
+#if !defined(_CASCADE_BLEND_SOFT)
+	res.cascade_blend = 1.0f;
+#endif
+
 	res.cascade_idx = i;
 	return res;
 }

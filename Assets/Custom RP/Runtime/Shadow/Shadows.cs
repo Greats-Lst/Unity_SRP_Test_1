@@ -23,6 +23,12 @@ public class Shadows
         "_DIRECTIONAL_PCF7",
     };
 
+    private static string[] m_cascade_blend_mode_keywords =
+    {
+        "_CASCADE_BLEND_SOFT",
+        "_CASCADE_BLEND_DITHER"
+    };
+
     private static Matrix4x4[] m_dir_shadow_matrices = new Matrix4x4[m_max_directional_light_shadow_count * m_max_cascade];
     private static Vector4[] m_cascade_culling_spheres = new Vector4[m_max_cascade];
     private static Vector4[] m_cascade_data = new Vector4[m_max_cascade];
@@ -109,7 +115,9 @@ public class Shadows
         m_cmd_buffer.SetGlobalVectorArray(m_cascade_data_id, m_cascade_data);
         m_cmd_buffer.SetGlobalMatrixArray(m_dir_shadow_matrices_id, m_dir_shadow_matrices);
 
-        SetPCFKeyword();
+        SetKeyword(m_directional_filter_keywords, (int)m_shadow_settings.DirectionalShadow.PCFFilterMode - 1);
+        SetKeyword(m_cascade_blend_mode_keywords, (int)m_shadow_settings.DirectionalShadow.CascadeBlendMode - 1);
+
         m_cmd_buffer.SetGlobalVector(m_shadow_atlas_size_id, new Vector4(atlas_size, 1.0f / atlas_size));
 
         m_cmd_buffer.EndSample(m_buffer_name);
@@ -152,20 +160,19 @@ public class Shadows
         }
     }
 
-    private void SetPCFKeyword()
+    private void SetKeyword(string[] keywords, int enable_idx)
     {
-        int index = (int)m_shadow_settings.DirectionalShadow.PCFFilterMode - 1;
-        for (int i = 0; i < m_directional_filter_keywords.Length; ++i)
+        for (int i = 0; i < keywords.Length; ++i)
         {
-            if (i == index)
+            if (i == enable_idx)
             {
-                m_cmd_buffer.EnableShaderKeyword(m_directional_filter_keywords[i]);
+                m_cmd_buffer.EnableShaderKeyword(keywords[i]);
             }
             else
             {
-                m_cmd_buffer.DisableShaderKeyword(m_directional_filter_keywords[i]);
+                m_cmd_buffer.DisableShaderKeyword(keywords[i]);
             }
-        }
+        }   
     }
 
     private void SetCascadeData(int index, Vector4 culling_sphere, int tile_size)

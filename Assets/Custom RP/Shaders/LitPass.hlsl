@@ -74,6 +74,7 @@ float4 LitPassFragment(Varyings input) : SV_TARGET
 	s.metalic = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Metalic);
 	s.smoothness = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Smoothness);
 	s.view_direction = normalize(_WorldSpaceCameraPos - input.positionWS);
+	s.dither = InterleavedGradientNoise(input.positionCS.xy, 0); // ‘Î…˘…˙≥…
 #if defined(_APPLYALPHATODIFFUSE)
 	BRDF brdf = GetBRDF(s, true);
 #else

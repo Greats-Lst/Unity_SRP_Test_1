@@ -51,6 +51,12 @@ public class ShadowSettings
 
         public EFilterMode PCFFilterMode;
 
+        public enum ECascadeBlendMode
+        {
+            Hard, Soft, Dither,
+        }
+        public ECascadeBlendMode CascadeBlendMode;
+
         public Vector3 CascadeRatio => new Vector3(CascadeRatio1, CascadeRatio2, CascadeRatio3);
     }
 
@@ -63,5 +69,6 @@ public class ShadowSettings
         CascadeRatio3 = 0.5f,
         CascadeFade = 0.1f,
         PCFFilterMode = EFilterMode.PCF2x2,
+        CascadeBlendMode = Directional.ECascadeBlendMode.Hard,
     }; 
 }
