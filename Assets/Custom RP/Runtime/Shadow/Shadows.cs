@@ -132,6 +132,10 @@ public class Shadows
         int tile_offset = index * cascade_count; // 这盏灯在阴影级联图集合数组中的起始下标（想象成二维数组的一维表示）
         Vector3 ratios = m_shadow_settings.DirectionalShadow.CascadeRatio;
 
+        // 因为之前是一个物体可能在多个级联球内部，Unity是为了让用户更好的进行Blend
+        // It makes sense to try and cull some shadow casters from larger cascades if it can be guaranteed that their results will always be covered by a smaller cascade.
+        float culling_factor = Mathf.Max(0f, 0.8f - m_shadow_settings.DirectionalShadow.CascadeFade);
+
         for (int i = 0; i < cascade_count; ++i)
         {
             m_culling_res.ComputeDirectionalShadowMatricesAndCullingPrimitives(
@@ -143,6 +147,7 @@ public class Shadows
                 out Matrix4x4 proj_matrix,
                 out ShadowSplitData shadow_split_data);
 
+            shadow_split_data.shadowCascadeBlendCullingFactor = culling_factor;
             set.splitData = shadow_split_data;
             if (index == 0)
             {
