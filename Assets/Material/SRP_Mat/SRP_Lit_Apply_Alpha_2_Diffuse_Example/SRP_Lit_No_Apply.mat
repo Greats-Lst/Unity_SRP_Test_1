@@ -11,13 +11,15 @@ Material:
   m_Shader: {fileID: 4800000, guid: e0409ac264bbad940b1048f552103693, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
-  m_InvalidKeywords:
+  m_ValidKeywords:
   - _CLIPPING
+  - _RECEIVE_SHADOWS
+  - _SHADOWS_CLIP
+  m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 2450
   stringTagMap: {}
   disabledShaderPasses: []
   m_LockedProperties: 
@@ -69,9 +71,9 @@ Material:
     - _ApplyAlphaToDiffuse: 0
     - _BumpScale: 1
     - _Clipping: 1
-    - _Cutoff: 0
+    - _Cutoff: 0.476
     - _DetailNormalMapScale: 1
-    - _DstBlend: 10
+    - _DstBlend: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
@@ -80,10 +82,12 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
+    - _ReceiveShadows: 1
+    - _Shadows: 1
     - _Smoothness: 0.469
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
-    - _SrcBlend: 5
+    - _SrcBlend: 1
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:

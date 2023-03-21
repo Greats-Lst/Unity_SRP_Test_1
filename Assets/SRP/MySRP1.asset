@@ -12,6 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a79ec3bbb8c270646a91e3081de7976f, type: 3}
   m_Name: MySRP1
   m_EditorClassIdentifier: 
-  m_enable_dynamic_batch: 0
-  m_enable_instancing: 1
-  m_enable_srp_batch: 1
+  EnableDynamicBatch: 0
+  EnableGPUInstancing: 1
+  EnableSRPBatch: 1
+  ShadowSettings:
+    MaxDistance: 100
+    DistanceFade: 0.259
+    DirectionalShadow:
+      AtlasSize: 512
+      CascadeCount: 4
+      CascadeRatio1: 0.167
+      CascadeRatio2: 0.297
+      CascadeRatio3: 0.5
+      CascadeFade: 0.481
+      PCFFilterMode: 0
+      CascadeBlendMode: 0
