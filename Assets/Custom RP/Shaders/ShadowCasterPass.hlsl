@@ -53,9 +53,12 @@ void ShadowCasterPassFragment(Varyings input) //: SV_TARGET
 	float4 base_color = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor);
 	float4 res_color = base_map * base_color;
 
-	#if defined(_CLIPPING)
+	#if defined(_SHADOWS_CLIP)
 		float alpha_cut_off = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Cutoff);
 		clip(res_color.a - alpha_cut_off);
+	#elif defined(_SHADOWS_DITHER)
+		float dither = InterleavedGradientNoise(input.positionCS.xy, 0);
+		clip(res_color.a - dither);
 	#endif
 }
 

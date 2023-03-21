@@ -7,6 +7,8 @@ Shader "Custom RP/Lit" {
 		_Cutoff("Alpha CutOff", Range(0.0, 1.0)) = 0.5
 		[Toggle(_CLIPPING)] _Clipping("Alpha Clipping", float) = 0
 		[Toggle(_APPLYALPHATODIFFUSE)] _ApplyAlphaToDiffuse("Apply Alpha To Diffuse", float) = 0
+		[KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadows", Float) = 0
+		[Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows("Receive Shadows", Float) = 1
 
 		// BRDF
 		_Metalic("Metalic", Range(0, 1)) = 1
@@ -36,6 +38,7 @@ Shader "Custom RP/Lit" {
 			#pragma multi_compile_instancing
 			#pragma shader_feature _CLIPPING
 			#pragma shader_feature _APPLYALPHATODIFFUSE
+			#pragma shader_feature _RECEIVE_SHADOWS
 			#pragma vertex LitPassVertex
 			#pragma fragment LitPassFragment
 			#include "LitPass.hlsl" // NOTE：这里少这个空格在Unity里不能编译通过！
@@ -53,7 +56,8 @@ Shader "Custom RP/Lit" {
 
 			HLSLPROGRAM
 			#pragma target 3.5
-			#pragma shader_feature _CLIPPING
+			//#pragma shader_feature _CLIPPING
+			#pragma shader_feature _ _SHADOWS_CLIP _SHADOWS_DITHER
 			#pragma multi_compile_instancing
 			#pragma vertex ShadowCasterPassVertex
 			#pragma fragment ShadowCasterPassFragment
