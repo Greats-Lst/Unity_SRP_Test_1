@@ -119,7 +119,7 @@ float FilterDirectionalShadow(float3 position_sts)
 float GetDirectionalShadowAttenuation(DirectionalShadowData direction_data, ShadowData shadow_data, Surface surface_ws) // world space
 {
 	#if !defined(_RECEIVE_SHADOWS)
-		return 1.0f;
+		return 1.0;
 	#endif
 
 	if (direction_data.strength <= 0.0f)

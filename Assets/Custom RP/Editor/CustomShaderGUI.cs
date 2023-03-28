@@ -142,7 +142,7 @@ public class CustomShaderGUI : ShaderGUI
         bool enabled = shadows.floatValue < (float)ShadowMode.Off;
         foreach (Material mat in m_mats)
         {
-            mat.SetShaderPassEnabled("ShadowCaster", false);
+            mat.SetShaderPassEnabled("ShadowCaster", enabled);
         }
     }
 

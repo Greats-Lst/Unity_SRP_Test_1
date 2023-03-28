@@ -26,4 +26,4 @@ MonoBehaviour:
       CascadeRatio3: 0.5
       CascadeFade: 0.481
       PCFFilterMode: 0
-      CascadeBlendMode: 0
+      CascadeBlendMode: 1
