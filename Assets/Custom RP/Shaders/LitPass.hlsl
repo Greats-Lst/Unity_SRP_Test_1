@@ -6,6 +6,7 @@
 #include "../ShaderLibrary/Shadows.hlsl"
 #include "../ShaderLibrary/Light.hlsl"
 #include "../ShaderLibrary/BRDF.hlsl"
+#include "../ShaderLibrary/GI.hlsl"
 #include "../ShaderLibrary/Lighting.hlsl"
 
 TEXTURE2D(_BaseMap);
@@ -24,6 +25,7 @@ struct Attributes {
 	float3 positionOS : POSITION;
 	float2 baseUV : TEXCOORD0;
 	float3 normalOS : NORMAL;
+	GI_ATTRIBUTE_DATA
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -33,6 +35,7 @@ struct Varyings
 	float2 baseUV : VAR_BASE_UV;
 	float3 normalWS : VAR_NORMAL;
 	float3 positionWS : VAR_POSITION;
+	GI_VARYINGS_DATA
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -41,6 +44,7 @@ Varyings LitPassVertex(Attributes input) //: SV_POSITION
 	Varyings output;
 	UNITY_SETUP_INSTANCE_ID(input);
 	UNITY_TRANSFER_INSTANCE_ID(input, output);
+	TRANSFER_GI_DATA(input, output);
 	output.positionWS = TransformObjectToWorld(input.positionOS);
 	output.positionCS = TransformWorldToHClip(output.positionWS);
 
@@ -80,7 +84,8 @@ float4 LitPassFragment(Varyings input) : SV_TARGET
 #else
 	BRDF brdf = GetBRDF(s);
 #endif
-	float3 res_color_2 = GetLighting(s, brdf);
+	GI gi = GetGI(GI_FRAGMENT_DATA(input));
+	float3 res_color_2 = GetLighting(s, brdf, gi);
 
 	return float4(res_color_2, s.alpha);
 }
