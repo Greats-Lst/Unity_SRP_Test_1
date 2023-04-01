@@ -3,8 +3,11 @@
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/EntityLighting.hlsl"
 
-TEXTURE2D(unity_Lightmap); // unity的烘培光照应该就在这里了
+TEXTURE2D(unity_Lightmap); // Bake Light Map
 SAMPLER(samplerunity_Lightmap);
+
+TEXTURE3D_FLOAT(unity_ProbeVolumeSH); // Bake Light Probe Proxy Volume
+SAMPLER(samplerunity_ProbeVolumeSH);
 
 #if defined (LIGHTMAP_ON)
 	#define GI_ATTRIBUTE_DATA float2 lightMapUV : TEXCOORD1; // The light map UV are provided via the second texture coordinates channel
@@ -44,15 +47,28 @@ float3 SampleLightProbe(Surface surface_ws)
 #if defined(LIGHTMAP_ON)
 	return 0;
 #else
-	float4 coefficients[7];
-	coefficients[0] = unity_SHAr;
-	coefficients[1] = unity_SHAg;
-	coefficients[2] = unity_SHAb;
-	coefficients[3] = unity_SHBr;
-	coefficients[4] = unity_SHBg;
-	coefficients[5] = unity_SHBb;
-	coefficients[6] = unity_SHC;
-	return max(0.0, SampleSH9(coefficients, surface_ws.normal));
+	if (unity_ProbeVolumeParams.x)
+	{
+		return SampleProbeVolumeSH4(
+			TEXTURE3D_ARGS(unity_ProbeVolumeSH, samplerunity_ProbeVolumeSH),
+			surface_ws.position, surface_ws.normal,
+			unity_ProbeVolumeWorldToObject,
+			unity_ProbeVolumeParams.y, unity_ProbeVolumeParams.z,
+			unity_ProbeVolumeMin.xyz, unity_ProbeVolumeSizeInv.xyz
+		);
+	}
+	else
+	{
+		float4 coefficients[7];
+		coefficients[0] = unity_SHAr;
+		coefficients[1] = unity_SHAg;
+		coefficients[2] = unity_SHAb;
+		coefficients[3] = unity_SHBr;
+		coefficients[4] = unity_SHBg;
+		coefficients[5] = unity_SHBb;
+		coefficients[6] = unity_SHC;
+		return max(0.0, SampleSH9(coefficients, surface_ws.normal));
+	}
 #endif
 }
 
