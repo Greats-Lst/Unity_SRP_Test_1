@@ -1,24 +1,24 @@
 #ifndef CUSTOM_UNLIT_PASS_INCLUDE
 #define CUSTOM_UNLIT_PASS_INCLUDE
 
-#include "../ShaderLibrary/Common.hlsl"
+//#include "../ShaderLibrary/Common.hlsl"
 
 //CBUFFER_START(UnityPerMaterial)
 //	float4 _BaseColor;
 //CBUFFER_END
 
-TEXTURE2D(_BaseMap);
-SAMPLER(sampler_BaseMap);
+//TEXTURE2D(_BaseMap);
+//SAMPLER(sampler_BaseMap);
 
 // for support to per-instance material Data
-UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
-	UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
-
-	//float4 _BaseColor;
-	UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
-
-	UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
-UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
+//UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
+//	UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
+//
+//	//float4 _BaseColor;
+//	UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
+//
+//	UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
+//UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
 struct Attributes {
 	float3 positionOS : POSITION;
@@ -41,8 +41,9 @@ Varyings UnlitPassVertex(Attributes input) //: SV_POSITION
 	float3 worldPos = TransformObjectToWorld(input.positionOS);
 	output.positionCS = TransformWorldToHClip(worldPos);
 
-	float4 st = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseMap_ST);
-	output.baseUV = input.baseUV * st.xy + st.zw;
+	//float4 st = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseMap_ST);
+	//output.baseUV = input.baseUV * st.xy + st.zw;
+	output.baseUV = TransformBaseUV(input.baseUV);
 	return output;
 }
 
@@ -57,12 +58,13 @@ float4 UnlitPassFragment(Varyings input) : SV_TARGET
 	// 否则GPU使用的应该还是下标为0的数据
 	UNITY_SETUP_INSTANCE_ID(input);
 
-	float4 base_map = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.baseUV);
-	float4 base_color = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor);
-	float4 res_color = base_map * base_color;
+	//float4 base_map = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.baseUV);
+	//float4 base_color = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor);
+	//float4 res_color = base_map * base_color;
+	float4 res_color = GetBase(input.baseUV);
 #if defined(_CLIPPING)
-	float alpha_cut_off = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Cutoff);
-	clip(res_color.a - alpha_cut_off);
+	//float alpha_cut_off = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Cutoff);
+	clip(res_color.a - GetCutoff(input.baseUV));
 #endif
 	return res_color;
 }
