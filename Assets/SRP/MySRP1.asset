@@ -19,11 +19,11 @@ MonoBehaviour:
     MaxDistance: 100
     DistanceFade: 0.259
     DirectionalShadow:
-      AtlasSize: 512
+      AtlasSize: 1024
       CascadeCount: 4
       CascadeRatio1: 0.167
       CascadeRatio2: 0.297
       CascadeRatio3: 0.5
       CascadeFade: 0.481
-      PCFFilterMode: 0
+      PCFFilterMode: 1
       CascadeBlendMode: 1
