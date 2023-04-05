@@ -77,6 +77,8 @@ public class CustomShaderGUI : ShaderGUI
         m_mats = materialEditor.targets;
         m_properties = properties;
 
+        BakedEmission();
+
         EditorGUILayout.Space();
         m_show_presets = EditorGUILayout.Foldout(m_show_presets, "Presets", true);
         if (m_show_presets)
@@ -212,6 +214,19 @@ public class CustomShaderGUI : ShaderGUI
             ZWrite = false;
             RenderQueue = RenderQueue.Transparent;
             Shadows = ShadowMode.Dither;
+        }
+    }
+
+    private void BakedEmission()
+    {
+        EditorGUI.BeginChangeCheck();
+        m_mat_editor.LightmapEmissionProperty();
+        if (EditorGUI.EndChangeCheck())
+        {
+            foreach (Material mat in m_mat_editor.targets)
+            {
+                mat.globalIlluminationFlags &= ~MaterialGlobalIlluminationFlags.EmissiveIsBlack;
+            }
         }
     }
 
