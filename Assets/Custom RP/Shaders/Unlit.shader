@@ -3,7 +3,7 @@ Shader "Custom RP/Unlit" {
 	Properties
 	{
 		_BaseMap("Texture", 2D) = "white" {}
-		_BaseColor("Color", Color) = (1.0, 0.0, 0.0, 1.0)
+		[HDR] _BaseColor("Color", Color) = (1.0, 0.0, 0.0, 1.0)
 		_Cutoff("Alpha CutOff", Range(0.0, 1.0)) = 0.5
 		[Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", float) = 0
 		[Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend("Src Blend", float) = 1

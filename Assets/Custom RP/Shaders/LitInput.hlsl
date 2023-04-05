@@ -2,12 +2,14 @@
 #define CUSTOM_LIT_INPUT_INCLUDE
 
 TEXTURE2D(_BaseMap);
+TEXTURE2D(_EmissionMap);
 SAMPLER(sampler_BaseMap);
 
 // for support to per-instance material Data
 UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
 	UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
 	UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
+	UNITY_DEFINE_INSTANCED_PROP(float4, _EmissionColor)
 	UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
 	UNITY_DEFINE_INSTANCED_PROP(float, _Metalic)
 	UNITY_DEFINE_INSTANCED_PROP(float, _Smoothness)
@@ -26,6 +28,13 @@ float4 GetBase(float2 baseUV)
 	return map * color;
 }
 
+float3 GetEmission(float2 baseUV)
+{
+	float4 map = SAMPLE_TEXTURE2D(_EmissionMap, sampler_BaseMap, baseUV);
+	float4 color = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _EmissionColor);
+	return map.rgb * color.rgb;
+}
+
 float GetCutoff(float2 baseUV)
 {
 	return UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Cutoff);
@@ -40,5 +49,6 @@ float GetSmoothnes(float2 baseUV)
 {
 	return UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Smoothness);
 }
+
 
 #endif

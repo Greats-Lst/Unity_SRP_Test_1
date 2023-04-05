@@ -59,15 +59,10 @@ Varyings LitPassVertex(Attributes input) //: SV_POSITION
 float4 LitPassFragment(Varyings input) : SV_TARGET
 {
 	UNITY_SETUP_INSTANCE_ID(input);
-
 	float3 normal = normalize(input.normalWS);
-	//float4 base_map = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.baseUV);
-	//float4 base_color = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor);
-	//float4 res_color_1 = base_map * base_color;
 	float4 res_color_1 = GetBase(input.baseUV);
 
 #if defined(_CLIPPING)
-	//float alpha_cut_off = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Cutoff);
 	clip(res_color_1.a - GetCutoff(input.baseUV));
 #endif
 
@@ -77,9 +72,7 @@ float4 LitPassFragment(Varyings input) : SV_TARGET
 	s.depth = -TransformWorldToView(input.positionWS).z;
 	s.normal = normal;
 	s.alpha = res_color_1.a;
-	//s.metalic = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Metalic);
 	s.metalic = GetMetalic(input.baseUV);
-	//s.smoothness = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Smoothness);
 	s.smoothness = GetSmoothnes(input.baseUV);
 	s.view_direction = normalize(_WorldSpaceCameraPos - input.positionWS);
 	s.dither = InterleavedGradientNoise(input.positionCS.xy, 0); // ‘Î…˘…˙≥…
@@ -90,7 +83,7 @@ float4 LitPassFragment(Varyings input) : SV_TARGET
 #endif
 	GI gi = GetGI(GI_FRAGMENT_DATA(input), s);
 	float3 res_color_2 = GetLighting(s, brdf, gi);
-
+	res_color_2 += GetEmission(input.baseUV);
 	return float4(res_color_2, s.alpha);
 }
 
