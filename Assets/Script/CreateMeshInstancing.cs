@@ -15,6 +15,12 @@ public class CreateMeshInstancing : MonoBehaviour
     [SerializeField]
     private Material m_mat;
 
+    /// <summary>
+    /// DrawInstanced的时候使用LPPV还是每帧生成LightProbe数据
+    /// </summary>
+    [SerializeField]
+    private LightProbeProxyVolume m_lppv = null;
+
     [SerializeField]
     private int m_mesh_count = 1024;
 
@@ -53,17 +59,21 @@ public class CreateMeshInstancing : MonoBehaviour
             m_block.SetFloatArray(m_metalic_id, m_matelics);
             m_block.SetFloatArray(m_smoothness_id, m_smoothness);
 
-            var positions = new Vector3[m_mesh_count];
-            for (int i = 0; i < m_mesh_count; ++i)
+            if (m_lppv == null)
             {
-                positions[i] = m_trs[i].GetColumn(3);
+                var positions = new Vector3[m_mesh_count];
+                for (int i = 0; i < m_mesh_count; ++i)
+                {
+                    positions[i] = m_trs[i].GetColumn(3);
+                }
+                var light_probes = new SphericalHarmonicsL2[m_mesh_count];
+                LightProbes.CalculateInterpolatedLightAndOcclusionProbes(positions, light_probes, null);
+                m_block.CopySHCoefficientArraysFrom(light_probes);
             }
-            var light_probes = new SphericalHarmonicsL2[m_mesh_count];
-            LightProbes.CalculateInterpolatedLightAndOcclusionProbes(positions, light_probes, null);
-            m_block.CopySHCoefficientArraysFrom(light_probes);
         }
 
+        var light_probe_usage = m_lppv == null ? LightProbeUsage.CustomProvided : LightProbeUsage.UseProxyVolume;
         Graphics.DrawMeshInstanced(m_mesh, 0, m_mat, m_trs, m_mesh_count, m_block,
-            ShadowCastingMode.On, true, 0, null, LightProbeUsage.CustomProvided);
+            ShadowCastingMode.On, true, 0, null, light_probe_usage);
     }
 }
