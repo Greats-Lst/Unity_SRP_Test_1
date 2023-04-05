@@ -12,6 +12,10 @@ Shader "Custom RP/Lit" {
 		[KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadows", Float) = 0
 		[Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows("Receive Shadows", Float) = 1
 
+		// Baked Transparency
+		[HideInInspector] _MainTex ("Texture For Light Map", 2D) = "white" {}
+		[HideInInspector] _Color ("Color For Light Map", Color) = (0.5, 0.5, 0.5, 1.0)
+
 		// BRDF
 		_Metalic("Metalic", Range(0, 1)) = 1
 		_Smoothness("Smoothness", Range(0, 1)) = 0.5

@@ -92,6 +92,7 @@ public class CustomShaderGUI : ShaderGUI
         if (EditorGUI.EndChangeCheck())
         {
             SetShadowCasterPass();
+            CopyLightMappingProperties();
         }
     }
 
@@ -148,8 +149,39 @@ public class CustomShaderGUI : ShaderGUI
         }
     }
 
+    private void BakedEmission()
+    {
+        EditorGUI.BeginChangeCheck();
+        m_mat_editor.LightmapEmissionProperty();
+        if (EditorGUI.EndChangeCheck())
+        {
+            foreach (Material mat in m_mat_editor.targets)
+            {
+                mat.globalIlluminationFlags &= ~MaterialGlobalIlluminationFlags.EmissiveIsBlack;
+            }
+        }
+    }
+
+    private void CopyLightMappingProperties()
+    {
+        MaterialProperty base_map = FindProperty("_BaseMap", m_properties, false);
+        MaterialProperty light_map = FindProperty("_MainTex", m_properties, false);
+        if (base_map != null && light_map != null)
+        {
+            light_map.textureValue = base_map.textureValue;
+            light_map.textureScaleAndOffset = base_map.textureScaleAndOffset;
+        }
+
+        MaterialProperty base_color = FindProperty("_BaseColor", m_properties, false);
+        MaterialProperty light_color = FindProperty("_Color", m_properties, false);
+        if (base_color != null && light_color != null)
+        {
+            light_color.colorValue = base_color.colorValue;
+        }
+    }
+
     #region Property Change
-    
+
     private bool PresetButton(string name)
     {
         if (GUILayout.Button(name))
@@ -214,19 +246,6 @@ public class CustomShaderGUI : ShaderGUI
             ZWrite = false;
             RenderQueue = RenderQueue.Transparent;
             Shadows = ShadowMode.Dither;
-        }
-    }
-
-    private void BakedEmission()
-    {
-        EditorGUI.BeginChangeCheck();
-        m_mat_editor.LightmapEmissionProperty();
-        if (EditorGUI.EndChangeCheck())
-        {
-            foreach (Material mat in m_mat_editor.targets)
-            {
-                mat.globalIlluminationFlags &= ~MaterialGlobalIlluminationFlags.EmissiveIsBlack;
-            }
         }
     }
 
