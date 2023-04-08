@@ -29,6 +29,11 @@ public class Shadows
         "_CASCADE_BLEND_DITHER"
     };
 
+    private static string[] m_shadow_mask_keywords =
+    {
+        "_SHADOW_MASK_DISTANCE",
+    };
+
     private static Matrix4x4[] m_dir_shadow_matrices = new Matrix4x4[m_max_directional_light_shadow_count * m_max_cascade];
     private static Vector4[] m_cascade_culling_spheres = new Vector4[m_max_cascade];
     private static Vector4[] m_cascade_data = new Vector4[m_max_cascade];
@@ -48,12 +53,14 @@ public class Shadows
 
     private ShadowedDirectionalLight[] m_shadowed_dir_lights = new ShadowedDirectionalLight[m_max_directional_light_shadow_count];
     private int m_shadowed_dir_lights_count = 0;
+    private bool m_use_shadow_mask = false;
 
     public void Setup(ScriptableRenderContext context, CullingResults cull_res, ShadowSettings shadow_settings)
     {
         m_context = context;
         m_culling_res = cull_res;
         m_shadow_settings = shadow_settings;
+        m_use_shadow_mask = false;
 
         m_cmd_buffer.BeginSample(m_buffer_name);
         //SetupLights();
@@ -79,6 +86,12 @@ public class Shadows
             m_cmd_buffer.GetTemporaryRT(m_dir_shadow_atlas_id, 1, 1,
                 16, FilterMode.Bilinear, RenderTextureFormat.Shadowmap);
         }
+
+        //We have to do this even if we end up not rendering any realtime shadows, because the shadow mask isn't realtime.
+        m_cmd_buffer.BeginSample(m_buffer_name);
+        SetKeyword(m_shadow_mask_keywords, m_use_shadow_mask ? 0 : -1);
+        m_cmd_buffer.EndSample(m_buffer_name);
+        ExecuteBuffer();
     }
 
     private void RenderDirectionalShadows()
@@ -207,6 +220,13 @@ public class Shadows
             light.shadowStrength > 0f &&
             m_culling_res.GetShadowCasterBounds(light_idx, out Bounds out_bounds))
         {
+            LightBakingOutput light_bake = light.bakingOutput;
+            if (light_bake.lightmapBakeType == LightmapBakeType.Mixed &&
+                light_bake.mixedLightingMode == MixedLightingMode.Shadowmask)
+            {
+                m_use_shadow_mask = true;
+            }
+
             m_shadowed_dir_lights[m_shadowed_dir_lights_count] = new ShadowedDirectionalLight() { 
                 VisibleLightIndex = light_idx,
                 SlopeScaleBias = light.shadowBias,

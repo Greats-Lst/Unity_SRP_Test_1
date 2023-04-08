@@ -89,7 +89,7 @@ public partial class CommonCameraRender
             enableDynamicBatching = enable_dynamic_batch,
             enableInstancing = enable_instancing,
             // PerObjectData.Lightmaps : render lightmapped objects with a shader variant that has the LIGHTMAP_ON keyword.
-            perObjectData = PerObjectData.Lightmaps | PerObjectData.LightProbe | PerObjectData.LightProbeProxyVolume,
+            perObjectData = PerObjectData.Lightmaps | PerObjectData.ShadowMask | PerObjectData.LightProbe | PerObjectData.LightProbeProxyVolume,
         };
         drawing_settings.SetShaderPassName(1, m_lit_shader_tag_id); // 构造时已经设置了第一个Shader Pass（m_unlit_shader_tag_id）
         var filtering_settings = new FilteringSettings(RenderQueueRange.opaque);
