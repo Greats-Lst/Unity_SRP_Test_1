@@ -46,12 +46,26 @@ float3 SampleLightMap(float2 lightmap_uv)
 #endif
 }
 
-float4 SampleBakedShadowMap(float2 lightmap_uv)
+float4 SampleBakedShadowMap(float2 lightmap_uv, Surface surface_ws)
 {
 #if defined(LIGHTMAP_ON)
 	return SAMPLE_TEXTURE2D(unity_ShadowMask, samplerunity_ShadowMask, lightmap_uv);
 #else
-	return 1.0;
+	if (unity_ProbeVolumeParams.x)
+	{
+		// 采样和SampleLightProbe一样
+		// 如果直接返回unity_ProbesOcclusion的话LPPVs是没有插值效果的
+		return SampleProbeOcclusion(TEXTURE3D_ARGS(unity_ProbeVolumeSH, samplerunity_ProbeVolumeSH),
+			surface_ws.position,
+			unity_ProbeVolumeWorldToObject,
+			unity_ProbeVolumeParams.y, unity_ProbeVolumeParams.z,
+			unity_ProbeVolumeMin.xyz, unity_ProbeVolumeSizeInv.xyz
+		);
+	}
+	else
+	{
+		return unity_ProbesOcclusion;
+	}
 #endif
 }
 
@@ -94,7 +108,7 @@ GI GetGI(float2 lightmap_uv, Surface surface_ws)
 
 #if defined(_SHADOW_MASK_DISTANCE)
 	gi.shadow_mask.distance = true;
-	gi.shadow_mask.shadows = SampleBakedShadowMap(lightmap_uv);
+	gi.shadow_mask.shadows = SampleBakedShadowMap(lightmap_uv, surface_ws);
 #endif
 
 	return gi;

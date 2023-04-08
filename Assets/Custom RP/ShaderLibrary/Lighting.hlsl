@@ -16,7 +16,6 @@ float3 GetLighting(Surface surface_ws, BRDF brdf, GI gi)
 	float3 color = gi.diffuse * brdf.diffuse;
 	ShadowData shadow_data = GetShadowData(surface_ws);
 	shadow_data.shadow_mask = gi.shadow_mask;
-	return gi.shadow_mask.shadows.rgb;
 	for (int i = 0; i < MAX_DIRECTION_LIGHT_COUNT; ++i)
 	{
 		Light l = GetDirectionLight(i, surface_ws, shadow_data);

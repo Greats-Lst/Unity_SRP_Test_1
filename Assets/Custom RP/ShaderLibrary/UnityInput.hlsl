@@ -11,6 +11,9 @@ CBUFFER_START(UnityPerDraw)
 	real4 unity_WorldTransformParams;
 	float3 _WorldSpaceCameraPos;	// 该变量的位置是我自己放的 我感觉可以放进这里，因为每次DrawCall都重新计算？
 
+	// Bake Shadow Mask For Dynamic Object
+	float4 unity_ProbesOcclusion;
+
 	// Bake Light Map
 	float4 unity_LightmapST;
 	float4 unity_DynamicLightmapST;
