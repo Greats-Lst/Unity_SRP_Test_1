@@ -67,8 +67,10 @@ public class CreateMeshInstancing : MonoBehaviour
                     positions[i] = m_trs[i].GetColumn(3);
                 }
                 var light_probes = new SphericalHarmonicsL2[m_mesh_count];
-                LightProbes.CalculateInterpolatedLightAndOcclusionProbes(positions, light_probes, null);
+                var probes_occlusion = new Vector4[m_mesh_count];
+                LightProbes.CalculateInterpolatedLightAndOcclusionProbes(positions, light_probes, probes_occlusion);
                 m_block.CopySHCoefficientArraysFrom(light_probes);
+                m_block.CopyProbeOcclusionArrayFrom(probes_occlusion);
             }
         }
 

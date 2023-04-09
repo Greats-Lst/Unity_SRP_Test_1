@@ -16,7 +16,7 @@ MonoBehaviour:
   EnableGPUInstancing: 1
   EnableSRPBatch: 1
   ShadowSettings:
-    MaxDistance: 100
+    MaxDistance: 8
     DistanceFade: 0.259
     DirectionalShadow:
       AtlasSize: 1024
