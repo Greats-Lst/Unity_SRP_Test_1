@@ -35,6 +35,7 @@ struct DirectionalShadowData
 	float strength;
 	int tile_idx;
 	float normal_bias;
+	int mask_channel;
 };
 
 struct ShadowMask
@@ -142,29 +143,32 @@ float GetCascadedShadow(DirectionalShadowData direction_data, ShadowData shadow_
 	return shadow;
 }
 
-float GetBakedShadow(ShadowMask mask)
+float GetBakedShadow(ShadowMask mask, int mask_channel)
 {
 	float shadow = 1.0f;
 	if (mask.distance || mask.always_active)
 	{
-		shadow = mask.shadows.r;
+		if (mask_channel >= 0)
+		{
+			shadow = mask.shadows[mask_channel];
+		}
 	}
 	return shadow;
 }
 
-float GetBakedShadow(ShadowMask mask, float strength)
+float GetBakedShadow(ShadowMask mask, float strength, int mask_channel)
 {
 	float shadow = 1.0f;
 	if (mask.distance || mask.always_active)
 	{
-		shadow = lerp(1.0f, GetBakedShadow(mask), strength);
+		shadow = lerp(1.0f, GetBakedShadow(mask, mask_channel), strength);
 	}
 	return shadow;
 }
 
-float MixBakedAndRealTimeShadow(ShadowData global, float shadow, float strength)
+float MixBakedAndRealTimeShadow(ShadowData global, float shadow, float strength, int mask_channel)
 {
-	float baked = GetBakedShadow(global.shadow_mask);
+	float baked = GetBakedShadow(global.shadow_mask, mask_channel);
 	if (global.shadow_mask.always_active)
 	{
 		shadow = lerp(1.0f, shadow, global.strength);
@@ -188,12 +192,12 @@ float GetDirectionalShadowAttenuation(DirectionalShadowData direction_data, Shad
 	float shadow;
 	if (direction_data.strength * global.strength <= 0.0f)
 	{
-		shadow = GetBakedShadow(global.shadow_mask, abs(direction_data.strength));
+		shadow = GetBakedShadow(global.shadow_mask, abs(direction_data.strength), direction_data.mask_channel);
 	}
 	else
 	{
 		shadow = GetCascadedShadow(direction_data, global, surface_ws);
-		shadow = MixBakedAndRealTimeShadow(global, shadow, direction_data.strength);
+		shadow = MixBakedAndRealTimeShadow(global, shadow, direction_data.strength, direction_data.mask_channel);
 	}
 
 	return shadow;

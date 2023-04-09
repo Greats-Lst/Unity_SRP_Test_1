@@ -214,22 +214,24 @@ public class Shadows
         return offset;
     }
 
-    public Vector3 ReserveDirectionalShadows(Light light, int light_idx)
+    public Vector4 ReserveDirectionalShadows(Light light, int light_idx)
     {
         if (m_shadowed_dir_lights_count < m_max_directional_light_shadow_count &&
             light.shadows != LightShadows.None &&
             light.shadowStrength > 0f)
         {
+            float shadow_mask_channel = -1;
             LightBakingOutput light_bake = light.bakingOutput;
             if (light_bake.lightmapBakeType == LightmapBakeType.Mixed &&
                 light_bake.mixedLightingMode == MixedLightingMode.Shadowmask)
             {
                 m_use_shadow_mask = true;
+                shadow_mask_channel = light_bake.occlusionMaskChannel;
             }
 
             if (m_culling_res.GetShadowCasterBounds(light_idx, out Bounds out_bounds) == false)
             {
-                return new Vector3(-light.shadowStrength, 0, 0);
+                return new Vector4(-light.shadowStrength, 0, 0, shadow_mask_channel);
             }
 
             m_shadowed_dir_lights[m_shadowed_dir_lights_count] = new ShadowedDirectionalLight() { 
@@ -238,12 +240,12 @@ public class Shadows
                 ShadowNearPlane = light.shadowNearPlane,
             };
 
-            return new Vector3(light.shadowStrength, 
+            return new Vector4(light.shadowStrength, 
                 m_shadow_settings.DirectionalShadow.CascadeCount * m_shadowed_dir_lights_count++,
-                light.shadowNormalBias);
+                light.shadowNormalBias, shadow_mask_channel);
         }
 
-        return Vector3.zero;
+        return new Vector4(0.0f, 0.0f, 0.0f, -1);
     }
 
     private void ExecuteBuffer()
