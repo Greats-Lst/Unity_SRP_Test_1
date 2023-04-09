@@ -20,7 +20,8 @@ struct Light
 DirectionalShadowData GetDirectionalShadowData(int idx, ShadowData shadow_data)
 {
 	DirectionalShadowData data;
-	data.strength = _DirectionalLightShadowData[idx].x * shadow_data.strength;
+	// 因为增加了烘培阴影所以把阴影本身的强度放到Shadow.hlsl里进行烘培阴影和实时阴影插值之后再改变强度
+	data.strength = _DirectionalLightShadowData[idx].x; //* shadow_data.strength;
 	data.tile_idx = _DirectionalLightShadowData[idx].y + shadow_data.cascade_idx;
 	data.normal_bias = _DirectionalLightShadowData[idx].z;
 	return data;

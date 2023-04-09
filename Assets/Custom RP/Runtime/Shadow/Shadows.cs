@@ -217,8 +217,7 @@ public class Shadows
     {
         if (m_shadowed_dir_lights_count < m_max_directional_light_shadow_count &&
             light.shadows != LightShadows.None &&
-            light.shadowStrength > 0f &&
-            m_culling_res.GetShadowCasterBounds(light_idx, out Bounds out_bounds))
+            light.shadowStrength > 0f)
         {
             LightBakingOutput light_bake = light.bakingOutput;
             if (light_bake.lightmapBakeType == LightmapBakeType.Mixed &&
@@ -227,11 +226,17 @@ public class Shadows
                 m_use_shadow_mask = true;
             }
 
+            if (m_culling_res.GetShadowCasterBounds(light_idx, out Bounds out_bounds) == false)
+            {
+                return new Vector3(-light.shadowStrength, 0, 0);
+            }
+
             m_shadowed_dir_lights[m_shadowed_dir_lights_count] = new ShadowedDirectionalLight() { 
                 VisibleLightIndex = light_idx,
                 SlopeScaleBias = light.shadowBias,
                 ShadowNearPlane = light.shadowNearPlane,
             };
+
             return new Vector3(light.shadowStrength, 
                 m_shadow_settings.DirectionalShadow.CascadeCount * m_shadowed_dir_lights_count++,
                 light.shadowNormalBias);

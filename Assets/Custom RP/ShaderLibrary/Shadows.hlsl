@@ -125,17 +125,8 @@ float FilterDirectionalShadow(float3 position_sts)
 #endif
 }
 
-float GetDirectionalShadowAttenuation(DirectionalShadowData direction_data, ShadowData shadow_data, Surface surface_ws) // world space
+float GetCascadedShadow(DirectionalShadowData direction_data, ShadowData shadow_data, Surface surface_ws)
 {
-	#if !defined(_RECEIVE_SHADOWS)
-		return 1.0;
-	#endif
-
-	if (direction_data.strength <= 0.0f)
-	{
-		return 1.0f;
-	}
-
 	float3 world_pos = surface_ws.position + surface_ws.normal * (direction_data.normal_bias * _CascadeData[shadow_data.cascade_idx].y);
 	float3 position_sts = mul(_DirectionalShadowMatrices[direction_data.tile_idx], float4(world_pos, 1.0)).xyz;
 	float shadow = FilterDirectionalShadow(position_sts);
@@ -146,6 +137,57 @@ float GetDirectionalShadowAttenuation(DirectionalShadowData direction_data, Shad
 		float next_shadow = FilterDirectionalShadow(next_position_sts);
 		shadow = lerp(next_shadow, shadow, shadow_data.cascade_blend);
 	}
-	return lerp(1.0f, shadow, direction_data.strength);
+	return shadow;
+}
+
+float GetBakedShadow(ShadowMask mask)
+{
+	float shadow = 1.0f;
+	if (mask.distance)
+	{
+		shadow = mask.shadows.r;
+	}
+	return shadow;
+}
+
+float GetBakedShadow(ShadowMask mask, float strength)
+{
+	float shadow = 1.0f;
+	if (mask.distance)
+	{
+		shadow = lerp(1.0f, GetBakedShadow(mask), strength);
+	}
+	return shadow;
+}
+
+float MixBakedAndRealTimeShadow(ShadowData global, float shadow, float strength)
+{
+	float baked = GetBakedShadow(global.shadow_mask);
+	if (global.shadow_mask.distance)
+	{
+		shadow = lerp(baked, shadow, global.strength);
+		return lerp(1.0f, shadow, strength);
+	}
+	return lerp(1.0f, shadow, strength * global.strength);
+}
+
+float GetDirectionalShadowAttenuation(DirectionalShadowData direction_data, ShadowData global, Surface surface_ws) // world space
+{
+	#if !defined(_RECEIVE_SHADOWS)
+		return 1.0;
+	#endif
+
+	float shadow;
+	if (direction_data.strength * global.strength <= 0.0f)
+	{
+		shadow = GetBakedShadow(global.shadow_mask, abs(direction_data.strength));
+	}
+	else
+	{
+		shadow = GetCascadedShadow(direction_data, global, surface_ws);
+		shadow = MixBakedAndRealTimeShadow(global, shadow, direction_data.strength);
+	}
+
+	return shadow;
 }
 #endif
