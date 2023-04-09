@@ -31,6 +31,7 @@ public class Shadows
 
     private static string[] m_shadow_mask_keywords =
     {
+        "_SHADOW_MASK_ALWAYS",
         "_SHADOW_MASK_DISTANCE",
     };
 
@@ -89,7 +90,7 @@ public class Shadows
 
         //We have to do this even if we end up not rendering any realtime shadows, because the shadow mask isn't realtime.
         m_cmd_buffer.BeginSample(m_buffer_name);
-        SetKeyword(m_shadow_mask_keywords, m_use_shadow_mask ? 0 : -1);
+        SetKeyword(m_shadow_mask_keywords, m_use_shadow_mask ? QualitySettings.shadowmaskMode == ShadowmaskMode.Shadowmask ? 0 : 1 : -1);
         m_cmd_buffer.EndSample(m_buffer_name);
         ExecuteBuffer();
     }

@@ -47,7 +47,7 @@ Shader "Custom RP/Lit" {
 			// NOTE: 这里少个回车竟然无法生效
 			#pragma multi_compile _ _CASCADE_BLEND_SOFT _CASCADE_BLEND_DITHER
 			#pragma multi_compile _ LIGHTMAP_ON
-			#pragma multi_compile _ _SHADOW_MASK_DISTANCE
+			#pragma multi_compile _ _SHADOW_MASK_ALWAYS _SHADOW_MASK_DISTANCE
 			#pragma multi_compile_instancing
 			#pragma shader_feature _CLIPPING
 			#pragma shader_feature _APPLYALPHATODIFFUSE
