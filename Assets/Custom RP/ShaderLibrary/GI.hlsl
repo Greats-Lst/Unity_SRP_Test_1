@@ -12,6 +12,9 @@ SAMPLER(samplerunity_ShadowMask);
 TEXTURE3D_FLOAT(unity_ProbeVolumeSH); // Bake Light Probe Proxy Volume
 SAMPLER(samplerunity_ProbeVolumeSH);
 
+TEXTURECUBE(unity_SpecCube0); // GI.Specular
+SAMPLER(samplerunity_SpecCube0);
+
 #if defined (LIGHTMAP_ON)
 	#define GI_ATTRIBUTE_DATA float2 lightMapUV : TEXCOORD1; // The light map UV are provided via the second texture coordinates channel
 	#define GI_VARYINGS_DATA float2 lightMapUV : VAR_LIGHT_MAP_UV;
@@ -27,6 +30,7 @@ SAMPLER(samplerunity_ProbeVolumeSH);
 struct GI
 {
 	float3 diffuse;
+	float3 specular;
 	ShadowMask shadow_mask;
 };
 
@@ -99,6 +103,13 @@ float3 SampleLightProbe(Surface surface_ws)
 #endif
 }
 
+float3 SampleEnvironment(Surface surface_ws)
+{
+	float3 uvw = reflect(-surface_ws.view_direction, surface_ws.normal);
+	float4 environment = SAMPLE_TEXTURECUBE_LOD(unity_SpecCube0, samplerunity_SpecCube0, uvw, 0.0);
+	return environment.rgb;
+}
+
 GI GetGI(float2 lightmap_uv, Surface surface_ws)
 {
 	GI gi;
@@ -106,6 +117,7 @@ GI GetGI(float2 lightmap_uv, Surface surface_ws)
 	gi.shadow_mask.distance = false;
 	gi.shadow_mask.shadows = 1.0;
 	gi.diffuse = SampleLightMap(lightmap_uv) + SampleLightProbe(surface_ws);
+	gi.specular = SampleEnvironment(surface_ws);
 
 #if defined(_SHADOW_MASK_DISTANCE)
 	gi.shadow_mask.distance = true;

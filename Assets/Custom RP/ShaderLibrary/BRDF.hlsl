@@ -61,4 +61,11 @@ float3 DirectBRDF(Surface s, BRDF brdf, Light l)
 	return SpecularStrength(s, brdf, l) * brdf.specular + brdf.diffuse;
 }
 
+float3 IndirectBRDF(Surface s, BRDF brdf, float3 diffuse, float3 specular)
+{
+	float3 reflection = specular * brdf.specular;
+	reflection /= brdf.roughness * brdf.roughness + 1; //roughness scatters reflection, so it should reduce the specular reflection that we end up seeing.
+	return diffuse * brdf.diffuse + reflection;
+}
+
 #endif
