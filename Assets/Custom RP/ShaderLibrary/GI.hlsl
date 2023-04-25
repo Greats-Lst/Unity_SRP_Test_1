@@ -2,6 +2,7 @@
 #define CUSTOM_GI_INCLUDE
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/EntityLighting.hlsl"
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/ImageBasedLighting.hlsl"
 
 TEXTURE2D(unity_Lightmap); // Bake Light Map
 SAMPLER(samplerunity_Lightmap);
@@ -103,21 +104,22 @@ float3 SampleLightProbe(Surface surface_ws)
 #endif
 }
 
-float3 SampleEnvironment(Surface surface_ws)
+float3 SampleEnvironment(Surface surface_ws, BRDF brdf)
 {
 	float3 uvw = reflect(-surface_ws.view_direction, surface_ws.normal);
-	float4 environment = SAMPLE_TEXTURECUBE_LOD(unity_SpecCube0, samplerunity_SpecCube0, uvw, 0.0);
+	float mip_level = PerceptualRoughnessToMipmapLevel(brdf.perceptualRoughness);
+	float4 environment = SAMPLE_TEXTURECUBE_LOD(unity_SpecCube0, samplerunity_SpecCube0, uvw, mip_level);
 	return environment.rgb;
 }
 
-GI GetGI(float2 lightmap_uv, Surface surface_ws)
+GI GetGI(float2 lightmap_uv, Surface surface_ws, BRDF brdf)
 {
 	GI gi;
 	gi.shadow_mask.always_active = false;
 	gi.shadow_mask.distance = false;
 	gi.shadow_mask.shadows = 1.0;
 	gi.diffuse = SampleLightMap(lightmap_uv) + SampleLightProbe(surface_ws);
-	gi.specular = SampleEnvironment(surface_ws);
+	gi.specular = SampleEnvironment(surface_ws, brdf);
 
 #if defined(_SHADOW_MASK_DISTANCE)
 	gi.shadow_mask.distance = true;

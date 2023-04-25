@@ -8,6 +8,8 @@ struct BRDF
 	float3 diffuse;
 	float3 specular;
 	float roughness;
+	float perceptualRoughness;
+	float fresnel;
 };
 
 float OneMinusReflectivity(float metailc)
@@ -29,8 +31,9 @@ BRDF GetBRDF(Surface s, bool apply_alpha_to_diffuse = false)
 
 	brdf.specular = lerp(MIN_REFLECTIVITY, s.color, s.metalic);
 
-	float perceptualRoughness = PerceptualSmoothnessToPerceptualRoughness(s.smoothness); // 1 - s.smoothness
-	brdf.roughness = PerceptualRoughnessToRoughness(perceptualRoughness); // perceptualRoughness * perceptualRoughness
+	brdf.perceptualRoughness = PerceptualSmoothnessToPerceptualRoughness(s.smoothness); // 1 - s.smoothness
+	brdf.roughness = PerceptualRoughnessToRoughness(brdf.perceptualRoughness); // perceptualRoughness * perceptualRoughness
+	brdf.fresnel = saturate(s.smoothness + 1.0 - oneMinusReflectivity);
 	return brdf;
 }
 
@@ -63,7 +66,8 @@ float3 DirectBRDF(Surface s, BRDF brdf, Light l)
 
 float3 IndirectBRDF(Surface s, BRDF brdf, float3 diffuse, float3 specular)
 {
-	float3 reflection = specular * brdf.specular;
+	float fresnel_strength = Pow4(1.0 - saturate(dot(s.normal, s.view_direction)));
+	float3 reflection = specular * lerp(brdf.specular, brdf.fresnel, fresnel_strength);
 	reflection /= brdf.roughness * brdf.roughness + 1; //roughness scatters reflection, so it should reduce the specular reflection that we end up seeing.
 	return diffuse * brdf.diffuse + reflection;
 }
