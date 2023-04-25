@@ -109,7 +109,7 @@ float3 SampleEnvironment(Surface surface_ws, BRDF brdf)
 	float3 uvw = reflect(-surface_ws.view_direction, surface_ws.normal);
 	float mip_level = PerceptualRoughnessToMipmapLevel(brdf.perceptualRoughness);
 	float4 environment = SAMPLE_TEXTURECUBE_LOD(unity_SpecCube0, samplerunity_SpecCube0, uvw, mip_level);
-	return environment.rgb;
+	return DecodeHDREnvironment(environment, unity_SpecCube0_HDR);
 }
 
 GI GetGI(float2 lightmap_uv, Surface surface_ws, BRDF brdf)

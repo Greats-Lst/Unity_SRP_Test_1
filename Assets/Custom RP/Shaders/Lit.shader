@@ -19,6 +19,7 @@ Shader "Custom RP/Lit" {
 		// BRDF
 		_Metalic("Metalic", Range(0, 1)) = 1
 		_Smoothness("Smoothness", Range(0, 1)) = 0.5
+		_Fresnel("Fresnel", Range(0, 1)) = 1
 		
 		[Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend("Src Blend", float) = 1
 		[Enum(UnityEngine.Rendering.BlendMode)] _DstBlend("Dst Blend", float) = 0

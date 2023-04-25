@@ -14,6 +14,9 @@ CBUFFER_START(UnityPerDraw)
 	// Bake Shadow Mask For Dynamic Object
 	float4 unity_ProbesOcclusion;
 
+	// Environment Probe
+	float4 unity_SpecCube0_HDR;
+
 	// Bake Light Map
 	float4 unity_LightmapST;
 	float4 unity_DynamicLightmapST;

@@ -21,6 +21,8 @@ struct Surface
 
 	float smoothness;
 
+	float fresnel_strength;
+
 	float dither;
 };
 

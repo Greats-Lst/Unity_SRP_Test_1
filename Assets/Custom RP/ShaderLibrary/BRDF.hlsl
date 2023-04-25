@@ -67,6 +67,7 @@ float3 DirectBRDF(Surface s, BRDF brdf, Light l)
 float3 IndirectBRDF(Surface s, BRDF brdf, float3 diffuse, float3 specular)
 {
 	float fresnel_strength = Pow4(1.0 - saturate(dot(s.normal, s.view_direction)));
+	fresnel_strength *= s.fresnel_strength;
 	float3 reflection = specular * lerp(brdf.specular, brdf.fresnel, fresnel_strength);
 	reflection /= brdf.roughness * brdf.roughness + 1; //roughness scatters reflection, so it should reduce the specular reflection that we end up seeing.
 	return diffuse * brdf.diffuse + reflection;

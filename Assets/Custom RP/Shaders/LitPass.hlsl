@@ -75,6 +75,7 @@ float4 LitPassFragment(Varyings input) : SV_TARGET
 	s.alpha = res_color_1.a;
 	s.metalic = GetMetalic(input.baseUV);
 	s.smoothness = GetSmoothnes(input.baseUV);
+	s.fresnel_strength = GetFresnel(input.baseUV);
 	s.view_direction = normalize(_WorldSpaceCameraPos - input.positionWS);
 	s.dither = InterleavedGradientNoise(input.positionCS.xy, 0); // ‘Î…˘…˙≥…
 #if defined(_APPLYALPHATODIFFUSE)
