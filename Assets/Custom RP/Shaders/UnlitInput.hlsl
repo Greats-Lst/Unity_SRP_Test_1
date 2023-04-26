@@ -1,6 +1,8 @@
 #ifndef CUSTOM_UNLIT_INPUT_INCLUDE
 #define CUSTOM_UNLIT_INPUT_INCLUDE
 
+#define INPUT_PROP(name) UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, name)
+
 TEXTURE2D(_BaseMap);
 SAMPLER(sampler_BaseMap);
 
@@ -13,20 +15,20 @@ UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
 float2 TransformBaseUV(float2 baseUV)
 {
-	float4 base_map_st = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseMap_ST);
+	float4 base_map_st = INPUT_PROP(_BaseMap_ST);
 	return baseUV * base_map_st.xy + base_map_st.zw;
 }
 
 float4 GetBase(float2 baseUV)
 {
 	float4 map = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, baseUV);
-	float4 color = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor);
+	float4 color = INPUT_PROP(_BaseColor);
 	return map * color;
 }
 
 float GetCutoff(float2 baseUV)
 {
-	return UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Cutoff);
+	return INPUT_PROP(_Cutoff);
 }
 
 float GetMetalic(float2 baseUV)
