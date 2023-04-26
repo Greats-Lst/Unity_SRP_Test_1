@@ -6,6 +6,11 @@ Shader "Custom RP/Lit" {
 		_BaseColor("Color", Color) = (0.5, 0.5, 0.5, 1.0)
 		[NoScaleOffset] _EmissionMap("Emission", 2D) = "white" {}
 		[HDR] _EmissionColor("Emission Color", Color) = (0.0, 0.0, 0.0, 0.0)
+
+		_DetailMap("Details Map", 2D) = "linearGrey" {}
+		_DetailAlbedo("Detail Albedo", Range(0, 1)) = 1
+		_DetailSmoothness("Detail Smoothness", Range(0, 1)) = 1
+
 		_Cutoff("Alpha CutOff", Range(0.0, 1.0)) = 0.5
 		[Toggle(_CLIPPING)] _Clipping("Alpha Clipping", float) = 0
 		[Toggle(_APPLYALPHATODIFFUSE)] _ApplyAlphaToDiffuse("Apply Alpha To Diffuse", float) = 0
@@ -17,7 +22,9 @@ Shader "Custom RP/Lit" {
 		[HideInInspector] _Color ("Color For Light Map", Color) = (0.5, 0.5, 0.5, 1.0)
 
 		// BRDF
+		[NoScaleOffset] _MaskMap("Mask (MODS)", 2D) = "white" {}
 		_Metalic("Metalic", Range(0, 1)) = 1
+		_Occlusion("Occlusion", Range(0, 1)) = 0.5
 		_Smoothness("Smoothness", Range(0, 1)) = 0.5
 		_Fresnel("Fresnel", Range(0, 1)) = 1
 		

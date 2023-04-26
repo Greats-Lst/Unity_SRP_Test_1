@@ -19,6 +19,8 @@ struct Surface
 
 	float metalic;
 
+	float occlusion;
+
 	float smoothness;
 
 	float fresnel_strength;
