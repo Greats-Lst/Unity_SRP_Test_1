@@ -10,6 +10,7 @@ TEXTURE2D(_NormalMap);
 SAMPLER(sampler_BaseMap);
 
 TEXTURE2D(_DetailMap);
+TEXTURE2D(_DetailNormalMap);
 SAMPLER(sampler_DetailMap);
 
 // for support to per-instance material Data
@@ -19,6 +20,7 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
 	UNITY_DEFINE_INSTANCED_PROP(float4, _DetailMap_ST)
 	UNITY_DEFINE_INSTANCED_PROP(float4, _EmissionColor)
 	UNITY_DEFINE_INSTANCED_PROP(float, _NormalScale)
+	UNITY_DEFINE_INSTANCED_PROP(float, _DetailNormalScale)
 	UNITY_DEFINE_INSTANCED_PROP(float, _DetailAlbedo)
 	UNITY_DEFINE_INSTANCED_PROP(float, _DetailSmoothness)
 	UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
@@ -117,12 +119,17 @@ float GetOcclusion(float2 baseUV)
 	return occlusion;
 }
 
-float3 GetNormalTS(float2 baseUV)
+float3 GetNormalTS(float2 baseUV, float2 detailUV = 0.0)
 {
 	float4 normal_map = SAMPLE_TEXTURE2D(_NormalMap, sampler_BaseMap, baseUV);
 	float normal_scale = INPUT_PROP(_NormalScale);
 	float3 unpack_normal = UnpackNormal(normal_map, normal_scale).rgb;
-	return unpack_normal;
+
+	float4 detail_normal_map = SAMPLE_TEXTURE2D(_DetailNormalMap, sampler_DetailMap, detailUV);
+	float detail_normal_scale = INPUT_PROP(_DetailNormalScale) * GetMask(baseUV).b;
+	float3 unpack_detail_normal = UnpackNormal(detail_normal_map, detail_normal_scale).rgb;
+
+	return BlendNormalRNM(unpack_normal, unpack_detail_normal);
 }
 
 #endif

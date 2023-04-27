@@ -11,8 +11,10 @@ Shader "Custom RP/Lit" {
 		_NormalScale ("Normal Scale", Range(0, 1)) = 1
 
 		_DetailMap("Details Map", 2D) = "linearGrey" {}
+		[NoScaleOffset] _DetailNormalMap("Details Normal Map", 2D) = "Bump" {}
 		_DetailAlbedo("Detail Albedo", Range(0, 1)) = 1
 		_DetailSmoothness("Detail Smoothness", Range(0, 1)) = 1
+		_DetailNormalScale("Detail Normal Scale", Range(0, 1)) = 1
 
 		_Cutoff("Alpha CutOff", Range(0.0, 1.0)) = 0.5
 		[Toggle(_CLIPPING)] _Clipping("Alpha Clipping", float) = 0

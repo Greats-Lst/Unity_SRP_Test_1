@@ -15,6 +15,8 @@ struct Surface
 	// 那么在实际使用的时候就需要自己知道在哪个坐标系中进行
 	float3 normal;
 
+	float3 interporlated_normal;
+
 	float alpha;
 
 	float metalic;

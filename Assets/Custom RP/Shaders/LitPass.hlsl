@@ -77,7 +77,8 @@ float4 LitPassFragment(Varyings input) : SV_TARGET
 	s.position = input.positionWS;
 	s.depth = -TransformWorldToView(input.positionWS).z;
 	//s.normal = normal;
-	s.normal = NormalTangentToWorld(GetNormalTS(input.baseUV), input.normalWS, input.tangentWS);
+	s.normal = NormalTangentToWorld(GetNormalTS(input.baseUV, input.detailUV), input.normalWS, input.tangentWS);
+	s.interporlated_normal = input.normalWS;
 	s.alpha = res_color_1.a;
 	s.metalic = GetMetalic(input.baseUV);
 	s.smoothness = GetSmoothnes(input.baseUV, input.detailUV);
