@@ -25,6 +25,7 @@ struct Attributes {
 	float3 positionOS : POSITION;
 	float2 baseUV : TEXCOORD0;
 	float3 normalOS : NORMAL;
+	float4 tangentOS : TANGENT;
 	GI_ATTRIBUTE_DATA
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
@@ -35,6 +36,7 @@ struct Varyings
 	float2 baseUV : VAR_BASE_UV;
 	float2 detailUV : VAR_DETAIL_UV;
 	float3 normalWS : VAR_NORMAL;
+	float4 tangentWS : VAR_TANGENT;
 	float3 positionWS : VAR_POSITION;
 	GI_VARYINGS_DATA
 	UNITY_VERTEX_INPUT_INSTANCE_ID
@@ -54,6 +56,7 @@ Varyings LitPassVertex(Attributes input) //: SV_POSITION
 	output.baseUV = TransformBaseUV(input.baseUV);
 	output.detailUV = TransformDetailUV(input.baseUV);
 	output.normalWS = TransformObjectToWorldNormal(input.normalOS);
+	output.tangentWS = float4(TransformObjectToWorldDir(input.tangentOS.xyz), input.tangentOS.w);
 	return output;
 }
 
@@ -73,7 +76,8 @@ float4 LitPassFragment(Varyings input) : SV_TARGET
 	s.color = res_color_1.rgb;
 	s.position = input.positionWS;
 	s.depth = -TransformWorldToView(input.positionWS).z;
-	s.normal = normal;
+	//s.normal = normal;
+	s.normal = NormalTangentToWorld(GetNormalTS(input.baseUV), input.normalWS, input.tangentWS);
 	s.alpha = res_color_1.a;
 	s.metalic = GetMetalic(input.baseUV);
 	s.smoothness = GetSmoothnes(input.baseUV, input.detailUV);

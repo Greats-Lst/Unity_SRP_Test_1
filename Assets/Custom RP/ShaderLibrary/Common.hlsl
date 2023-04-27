@@ -25,6 +25,7 @@
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/SpaceTransforms.hlsl"
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Packing.hlsl"
 
 float Square(float v)
 {
@@ -36,11 +37,27 @@ float DistanceSquared(float3 lhs, float3 rhs)
 	return dot(lhs - rhs, lhs - rhs);
 }
 
-void ClipLOD(float2 positionCS, float fade) {
+void ClipLOD(float2 positionCS, float fade) 
+{
 #if defined(LOD_FADE_CROSSFADE)
 	float dither = InterleavedGradientNoise(positionCS.xy, 0);
 	clip(fade + (fade < 0.0 ? dither : -dither));
 #endif
+}
+
+float3 UnpackNormal(float4 sample_normal, float scale)
+{
+#if defined(UNITY_NO_DXT5nm)
+	return UnpackNormalRGB(sample_normal, scale);
+#else 
+	return UnpackNormalmapRGorAG(sample_normal, scale);
+#endif
+}
+
+float3 NormalTangentToWorld(float3 normal_ts, float3 normal_ws, float4 tangent_ws)
+{
+	float3x3 tangent_to_world = CreateTangentToWorld(normal_ws, tangent_ws.xyz, tangent_ws.w);
+	return TransformTangentToWorld(normal_ts, tangent_to_world);
 }
 
 #endif

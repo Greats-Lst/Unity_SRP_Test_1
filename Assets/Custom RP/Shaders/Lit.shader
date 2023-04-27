@@ -7,6 +7,9 @@ Shader "Custom RP/Lit" {
 		[NoScaleOffset] _EmissionMap("Emission", 2D) = "white" {}
 		[HDR] _EmissionColor("Emission Color", Color) = (0.0, 0.0, 0.0, 0.0)
 
+		[NoScaleOffset] _NormalMap("Normals", 2D) = "Bump" {}
+		_NormalScale ("Normal Scale", Range(0, 1)) = 1
+
 		_DetailMap("Details Map", 2D) = "linearGrey" {}
 		_DetailAlbedo("Detail Albedo", Range(0, 1)) = 1
 		_DetailSmoothness("Detail Smoothness", Range(0, 1)) = 1

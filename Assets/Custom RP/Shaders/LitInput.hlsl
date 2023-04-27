@@ -6,6 +6,7 @@
 TEXTURE2D(_BaseMap);
 TEXTURE2D(_EmissionMap);
 TEXTURE2D(_MaskMap);
+TEXTURE2D(_NormalMap);
 SAMPLER(sampler_BaseMap);
 
 TEXTURE2D(_DetailMap);
@@ -17,6 +18,7 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
 	UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
 	UNITY_DEFINE_INSTANCED_PROP(float4, _DetailMap_ST)
 	UNITY_DEFINE_INSTANCED_PROP(float4, _EmissionColor)
+	UNITY_DEFINE_INSTANCED_PROP(float, _NormalScale)
 	UNITY_DEFINE_INSTANCED_PROP(float, _DetailAlbedo)
 	UNITY_DEFINE_INSTANCED_PROP(float, _DetailSmoothness)
 	UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
@@ -113,6 +115,14 @@ float GetOcclusion(float2 baseUV)
 	float occlusion = GetMask(baseUV).g;
 	occlusion = lerp(occlusion, 1.0, occlusion_strenth);
 	return occlusion;
+}
+
+float3 GetNormalTS(float2 baseUV)
+{
+	float4 normal_map = SAMPLE_TEXTURE2D(_NormalMap, sampler_BaseMap, baseUV);
+	float normal_scale = INPUT_PROP(_NormalScale);
+	float3 unpack_normal = UnpackNormal(normal_map, normal_scale).rgb;
+	return unpack_normal;
 }
 
 #endif
