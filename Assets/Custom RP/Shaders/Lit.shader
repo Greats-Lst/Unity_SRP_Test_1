@@ -7,9 +7,11 @@ Shader "Custom RP/Lit" {
 		[NoScaleOffset] _EmissionMap("Emission", 2D) = "white" {}
 		[HDR] _EmissionColor("Emission Color", Color) = (0.0, 0.0, 0.0, 0.0)
 
+		[Toggle(_NORMAL_MAP)] _NormalMapToggle("Normal Map", float) = 0
 		[NoScaleOffset] _NormalMap("Normals", 2D) = "Bump" {}
 		_NormalScale ("Normal Scale", Range(0, 1)) = 1
 
+		[Toggle(_DETAIL_MAP)] _DetailMapToggle("Detail Map", float) = 0
 		_DetailMap("Details Map", 2D) = "linearGrey" {}
 		[NoScaleOffset] _DetailNormalMap("Details Normal Map", 2D) = "Bump" {}
 		_DetailAlbedo("Detail Albedo", Range(0, 1)) = 1
@@ -27,6 +29,7 @@ Shader "Custom RP/Lit" {
 		[HideInInspector] _Color ("Color For Light Map", Color) = (0.5, 0.5, 0.5, 1.0)
 
 		// BRDF
+		[Toggle(_MASK_MAP)] _MaskMapToggle("Mask Map", float) = 0
 		[NoScaleOffset] _MaskMap("Mask (MODS)", 2D) = "white" {}
 		_Metalic("Metalic", Range(0, 1)) = 1
 		_Occlusion("Occlusion", Range(0, 1)) = 0.5
@@ -63,6 +66,9 @@ Shader "Custom RP/Lit" {
 			#pragma multi_compile _ _SHADOW_MASK_ALWAYS _SHADOW_MASK_DISTANCE
 			#pragma multi_compile _ LOD_FADE_CROSSFADE
 			#pragma multi_compile_instancing
+			#pragma shader_feature _NORMAL_MAP
+			#pragma shader_feature _MASK_MAP
+			#pragma shader_feature _DETAIL_MAP
 			#pragma shader_feature _CLIPPING
 			#pragma shader_feature _APPLYALPHATODIFFUSE
 			#pragma shader_feature _RECEIVE_SHADOWS

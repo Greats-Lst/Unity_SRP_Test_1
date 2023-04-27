@@ -19,34 +19,34 @@ float2 TransformBaseUV(float2 baseUV)
 	return baseUV * base_map_st.xy + base_map_st.zw;
 }
 
-float4 GetBase(float2 baseUV)
+float4 GetBase(InputConfig c)
 {
-	float4 map = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, baseUV);
+	float4 map = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, c.baseUV);
 	float4 color = INPUT_PROP(_BaseColor);
 	return map * color;
 }
 
-float GetCutoff(float2 baseUV)
+float GetCutoff(InputConfig c)
 {
 	return INPUT_PROP(_Cutoff);
 }
 
-float GetMetalic(float2 baseUV)
+float GetMetalic(InputConfig c)
 {
 	return 0;
 }
 
-float GetSmoothnes(float2 baseUV)
+float GetSmoothnes(InputConfig c)
 {
 	return 0;
 }
 
-float3 GetEmission(float2 baseUV)
+float3 GetEmission(InputConfig c)
 {
-	return GetBase(baseUV).rgb;
+	return GetBase(c).rgb;
 }
 
-float GetFresnel(float2 baseUV)
+float GetFresnel(InputConfig c)
 {
 	return 0.0;
 }

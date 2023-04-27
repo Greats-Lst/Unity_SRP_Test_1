@@ -36,10 +36,11 @@ void ShadowCasterPassFragment(Varyings input) //: SV_TARGET
 {
 	UNITY_SETUP_INSTANCE_ID(input);
 	ClipLOD(input.positionCS.xy, unity_LODFade.x);
-	float4 res_color = GetBase(input.baseUV);
+	InputConfig c = GetInputConfig(input.baseUV);
+	float4 res_color = GetBase(c);
 
 	#if defined(_SHADOWS_CLIP)
-		clip(res_color.a - GetCutoff(input.baseUV));
+		clip(res_color.a - GetCutoff(c));
 	#elif defined(_SHADOWS_DITHER)
 		float dither = InterleavedGradientNoise(input.positionCS.xy, 0);
 		clip(res_color.a - dither);

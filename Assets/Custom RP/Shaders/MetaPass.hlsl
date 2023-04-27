@@ -34,12 +34,13 @@ Varyings MetaPassVertex(Attributes input)
 
 float4 MetaPassFragment(Varyings input) : SV_TARGET
 {
-	float4 base = GetBase(input.baseUV);
+	InputConfig c = GetInputConfig(input.baseUV);
+	float4 base = GetBase(c);
 	Surface s;
 	ZERO_INITIALIZE(Surface, s);
 	s.color = base.rgb;
-	s.metalic = GetMetalic(input.baseUV);
-	s.smoothness = GetSmoothnes(input.baseUV);
+	s.metalic = GetMetalic(c);
+	s.smoothness = GetSmoothnes(c);
 	BRDF brdf = GetBRDF(s);
 	float4 meta = 0.0;
 	// If the X flag is set then diffuse reflectivity is requested
@@ -51,7 +52,7 @@ float4 MetaPassFragment(Varyings input) : SV_TARGET
 	}
 	else if (unity_MetaFragmentControl.y)
 	{
-		meta = float4(GetEmission(input.baseUV), 1.0);
+		meta = float4(GetEmission(c), 1.0);
 	}
 	return meta;
 }

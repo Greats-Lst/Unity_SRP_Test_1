@@ -27,6 +27,24 @@
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/SpaceTransforms.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Packing.hlsl"
 
+struct InputConfig
+{
+	float2 baseUV;
+	float2 detailUV;
+	bool useMask;
+	bool useDetail;
+};
+
+InputConfig GetInputConfig(float2 baseUV, float2 detailUV = 0.0)
+{
+	InputConfig c;
+	c.baseUV = baseUV;
+	c.detailUV = detailUV;
+	c.useMask = false;
+	c.useDetail = false;
+	return c;
+}
+
 float Square(float v)
 {
 	return v * v;

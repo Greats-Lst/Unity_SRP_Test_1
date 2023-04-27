@@ -36,15 +36,26 @@ float2 TransformDetailUV(float2 baseUV)
 	return baseUV * detail_map_st.xy + detail_map_st.zw;
 }
 
-float4 GetDetail(float2 baseUV)
+float4 GetDetail(InputConfig c)
 {
-	float4 map = SAMPLE_TEXTURE2D(_DetailMap, sampler_DetailMap, baseUV);
-	return map * 2.0 - 1.0;
+	if (c.useDetail)
+	{
+		float4 map = SAMPLE_TEXTURE2D(_DetailMap, sampler_DetailMap, c.baseUV);
+		return map * 2.0 - 1.0;
+	}
+	return 0.0;
 }
 
-float4 GetMask(float2 baseUV)
+float4 GetMask(InputConfig c)
 {
-	return SAMPLE_TEXTURE2D(_MaskMap, sampler_BaseMap, baseUV);
+	if (c.useMask)
+	{
+		return SAMPLE_TEXTURE2D(_MaskMap, sampler_BaseMap, c.baseUV);
+	}
+	else
+	{
+		return 1;
+	}
 }
 
 float2 TransformBaseUV(float2 baseUV)
@@ -53,83 +64,93 @@ float2 TransformBaseUV(float2 baseUV)
 	return baseUV * base_map_st.xy + base_map_st.zw;
 }
 
-float4 GetBase(float2 baseUV, float2 detailUV = 0.0)
+float4 GetBase(InputConfig c)
 {
-	float4 map = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, baseUV);
+	float4 map = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, c.baseUV);
 	float4 color = INPUT_PROP(_BaseColor);
-	float4 mask = GetMask(baseUV);
 
-	float detail = GetDetail(detailUV).r * INPUT_PROP(_DetailAlbedo);
+	if (c.useDetail)
 	{
-		// Linear Space
-		//map.rgb = lerp(map.rgb, detail < 0.0 ? 0.0 : 1.0, abs(detail));
-	}
-	{
-		// Gamma Space
-		map.rgb = lerp(sqrt(map.rgb), detail < 0.0 ? 0.0 : 1.0, abs(detail) * mask.b);
-		map.rgb *= map.rgb;
+		float detail = GetDetail(c).r * INPUT_PROP(_DetailAlbedo);
+		{
+			// Linear Space
+			//map.rgb = lerp(map.rgb, detail < 0.0 ? 0.0 : 1.0, abs(detail));
+		}
+		{
+			// Gamma Space
+			float4 mask = GetMask(c);
+			map.rgb = lerp(sqrt(map.rgb), detail < 0.0 ? 0.0 : 1.0, abs(detail) * mask.b);
+			map.rgb *= map.rgb;
+		}
 	}
 	
 
 	return map * color;
 }
 
-float3 GetEmission(float2 baseUV)
+float3 GetEmission(InputConfig c)
 {
-	float4 map = SAMPLE_TEXTURE2D(_EmissionMap, sampler_BaseMap, baseUV);
+	float4 map = SAMPLE_TEXTURE2D(_EmissionMap, sampler_BaseMap, c.baseUV);
 	float4 color = INPUT_PROP(_EmissionColor);
 	return map.rgb * color.rgb;
 }
 
-float GetCutoff(float2 baseUV)
+float GetCutoff(InputConfig c)
 {
 	return INPUT_PROP(_Cutoff);
 }
 
-float GetMetalic(float2 baseUV)
+float GetMetalic(InputConfig c)
 {
 	float metalic = INPUT_PROP(_Metalic);
-	metalic *= GetMask(baseUV).r;
+	metalic *= GetMask(c).r;
 	return metalic;
 }
 
-float GetSmoothnes(float2 baseUV, float2 detailUV = 0.0)
+float GetSmoothnes(InputConfig c)
 {
 	float smoothness = INPUT_PROP(_Smoothness);
-	smoothness *= GetMask(baseUV).a;
-	float4 mask = GetMask(baseUV);
+	smoothness *= GetMask(c).a;
 
-	float detail = GetDetail(detailUV).b * INPUT_PROP(_DetailSmoothness);
-	smoothness = lerp(smoothness, detail < 0.0 ? 0.0 : 1.0, abs(detail) * mask.b);
+	if (c.useDetail)
+	{
+		float4 mask = GetMask(c);
+		float detail = GetDetail(c).b * INPUT_PROP(_DetailSmoothness);
+		smoothness = lerp(smoothness, detail < 0.0 ? 0.0 : 1.0, abs(detail) * mask.b);
+	}
 
 	return smoothness;
 }
 
-float GetFresnel(float2 baseUV)
+float GetFresnel(InputConfig c)
 {
 	return INPUT_PROP(_Fresnel);
 }
 
-float GetOcclusion(float2 baseUV)
+float GetOcclusion(InputConfig c)
 {
 	// 只会影响间接光，不会影响直射光
 	float occlusion_strenth = INPUT_PROP(_Occlusion);
-	float occlusion = GetMask(baseUV).g;
+	float occlusion = GetMask(c).g;
 	occlusion = lerp(occlusion, 1.0, occlusion_strenth);
 	return occlusion;
 }
 
-float3 GetNormalTS(float2 baseUV, float2 detailUV = 0.0)
+float3 GetNormalTS(InputConfig c)
 {
-	float4 normal_map = SAMPLE_TEXTURE2D(_NormalMap, sampler_BaseMap, baseUV);
+	float4 normal_map = SAMPLE_TEXTURE2D(_NormalMap, sampler_BaseMap, c.baseUV);
 	float normal_scale = INPUT_PROP(_NormalScale);
 	float3 unpack_normal = UnpackNormal(normal_map, normal_scale).rgb;
 
-	float4 detail_normal_map = SAMPLE_TEXTURE2D(_DetailNormalMap, sampler_DetailMap, detailUV);
-	float detail_normal_scale = INPUT_PROP(_DetailNormalScale) * GetMask(baseUV).b;
-	float3 unpack_detail_normal = UnpackNormal(detail_normal_map, detail_normal_scale).rgb;
+	if (c.useDetail)
+	{
+		float4 detail_normal_map = SAMPLE_TEXTURE2D(_DetailNormalMap, sampler_DetailMap, c.detailUV);
+		float detail_normal_scale = INPUT_PROP(_DetailNormalScale) * GetMask(c).b;
+		float3 unpack_detail_normal = UnpackNormal(detail_normal_map, detail_normal_scale).rgb;
+		unpack_normal = BlendNormalRNM(unpack_normal, unpack_detail_normal);
+	}
 
-	return BlendNormalRNM(unpack_normal, unpack_detail_normal);
+	return unpack_normal;
 }
 
 #endif
