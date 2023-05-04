@@ -2,12 +2,17 @@
 #define CUSTOM_LIGHT_INCLUDE
 
 #define MAX_DIRECTION_LIGHT_COUNT 4
+#define MAX_OTHER_LIGHT_COUNT 64
 
 CBUFFER_START(_CustomLight)
 	int _DirectionLightMaxCount;
 	float4 _DirectionalLightColors[MAX_DIRECTION_LIGHT_COUNT];
 	float4 _DirectionalLightDirections[MAX_DIRECTION_LIGHT_COUNT];
 	float4 _DirectionalLightShadowData[MAX_DIRECTION_LIGHT_COUNT];
+
+	int _OtherLightMaxCount;
+	float4 _OtherLightColors[MAX_OTHER_LIGHT_COUNT];
+	float4 _OtherLightPosition[MAX_OTHER_LIGHT_COUNT];
 CBUFFER_END
 
 struct Light
@@ -31,11 +36,25 @@ DirectionalShadowData GetDirectionalShadowData(int idx, ShadowData shadow_data)
 Light GetDirectionLight(int idx, Surface surface_ws, ShadowData shadow_data)
 {
 	Light light;
-	light.color = _DirectionalLightColors[idx].xyz;
+	light.color = _DirectionalLightColors[idx].rgb;
 	light.direction = _DirectionalLightDirections[idx].xyz;
 	DirectionalShadowData dir_shadow_data = GetDirectionalShadowData(idx, shadow_data);
 	light.attenuation = GetDirectionalShadowAttenuation(dir_shadow_data, shadow_data, surface_ws);
 	return light;
 }
 
+Light GetOtherLight(int idx, Surface surface_ws, ShadowData shadow_data)
+{
+	Light light;
+	light.color = _OtherLightColors[idx].rgb;
+	float3 ray = _OtherLightPosition[idx].xyz - surface_ws.position;
+	light.direction = normalize(ray);
+	light.attenuation = 1.0;
+	return light;
+}
+
+int GetOtherLightCount()
+{
+	return _OtherLightMaxCount;
+}
 #endif
