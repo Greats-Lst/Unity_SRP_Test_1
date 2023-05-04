@@ -49,7 +49,10 @@ Light GetOtherLight(int idx, Surface surface_ws, ShadowData shadow_data)
 	light.color = _OtherLightColors[idx].rgb;
 	float3 ray = _OtherLightPosition[idx].xyz - surface_ws.position;
 	light.direction = normalize(ray);
-	light.attenuation = 1.0;
+	float sqr_distance = max(dot(ray, ray), 0.00001);
+	//_OtherLightPosition[idx].w ¥Ê¡À1 / (light.range * light.range)
+	float range_attrenuation = Square(max(0, 1.0 - Square(sqr_distance * _OtherLightPosition[idx].w)));
+	light.attenuation = range_attrenuation;
 	return light;
 }
 

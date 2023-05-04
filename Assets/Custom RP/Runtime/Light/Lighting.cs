@@ -118,7 +118,9 @@ public class Lighting
     private void SetupPointLight(int index, ref VisibleLight visible_light)
     {
         m_other_light_colors[index] = visible_light.finalColor;
-        m_other_light_positions[index] = visible_light.localToWorldMatrix.GetColumn(3);
+        Vector4 position = visible_light.localToWorldMatrix.GetColumn(3);
+        position.w = 1 / Mathf.Max(visible_light.range * visible_light.range, 0.0001f);
+        m_other_light_positions[index] = position;
     }
 
     private void ExecuteBuffer()
