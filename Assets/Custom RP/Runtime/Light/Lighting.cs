@@ -23,10 +23,12 @@ public class Lighting
     private static int m_other_light_count_id = Shader.PropertyToID("_OtherLightMaxCount");
     private static int m_other_light_color_id = Shader.PropertyToID("_OtherLightColors");
     private static int m_other_light_position_id = Shader.PropertyToID("_OtherLightPosition");
-    private static int m_other_light_direction_id = Shader.PropertyToID("_OtherLightDirection");
+    private static int m_other_light_direction_id = Shader.PropertyToID("_OtherLightDirection"); // Spot Light Used
+    private static int m_other_light_spot_angles_id = Shader.PropertyToID("_OtherLightSpotAngles"); // Spot Light Used
     private static Vector4[] m_other_light_colors = new Vector4[m_max_other_light_count];
     private static Vector4[] m_other_light_positions = new Vector4[m_max_other_light_count];
-    private static Vector4[] m_other_light_directions = new Vector4[m_max_other_light_count];
+    private static Vector4[] m_other_light_directions = new Vector4[m_max_other_light_count]; // Spot Light Used
+    private static Vector4[] m_other_light_spot_angles = new Vector4[m_max_other_light_count]; // Spot Light Used
 
 
     private CommandBuffer m_cmd_buffer = new CommandBuffer() { name = m_buffer_name };
@@ -106,6 +108,7 @@ public class Lighting
             m_cmd_buffer.SetGlobalVectorArray(m_other_light_color_id, m_other_light_colors);
             m_cmd_buffer.SetGlobalVectorArray(m_other_light_position_id, m_other_light_positions);
             m_cmd_buffer.SetGlobalVectorArray(m_other_light_direction_id, m_other_light_directions);
+            m_cmd_buffer.SetGlobalVectorArray(m_other_light_spot_angles_id, m_other_light_spot_angles);
         }
     }
 
@@ -130,6 +133,7 @@ public class Lighting
         Vector4 position = visible_light.localToWorldMatrix.GetColumn(3);
         position.w = 1 / Mathf.Max(visible_light.range * visible_light.range, 0.0001f);
         m_other_light_positions[index] = position;
+        m_other_light_spot_angles[index] = new Vector4(0f, 1f);
     }
 
     private void SetupSpotLight(int index, ref VisibleLight visible_light)
@@ -139,6 +143,12 @@ public class Lighting
         position.w = 1 / Mathf.Max(visible_light.range * visible_light.range, 0.0001f);
         m_other_light_positions[index] = position;
         m_other_light_directions[index] = -visible_light.localToWorldMatrix.GetColumn(2);
+
+        Light light = visible_light.light;
+        float inner_cos = Mathf.Cos(Mathf.Deg2Rad * 0.5f * light.innerSpotAngle);
+        float outer_cos = Mathf.Cos(Mathf.Deg2Rad * 0.5f * visible_light.spotAngle);
+        float angle_range_inv = 1f / Mathf.Max(inner_cos - outer_cos, 0.001f);
+        m_other_light_spot_angles[index] = new Vector4(angle_range_inv, -outer_cos * angle_range_inv);
     }
 
     private void ExecuteBuffer()
