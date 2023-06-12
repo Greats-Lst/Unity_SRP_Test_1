@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-public class MyScriptRenderPipieline : RenderPipeline
+public partial class MyScriptRenderPipieline : RenderPipeline
 {
     private CommonCameraRender m_camera_render = new CommonCameraRender();
     private ShadowSettings m_shadow_settings;
@@ -20,6 +20,8 @@ public class MyScriptRenderPipieline : RenderPipeline
         m_shadow_settings = shadow_settings;
         m_enable_dynamic_batch = enable_dynamic_batch;
         m_enable_instancing = enable_instancing;
+
+        InitializeForEditor();
     }
 
     protected override void Render(ScriptableRenderContext context, Camera[] cameras)
