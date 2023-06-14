@@ -38,6 +38,12 @@ struct DirectionalShadowData
 	int mask_channel;
 };
 
+struct OtherShadowData
+{
+	float strength;
+	int mask_channel;
+};
+
 struct ShadowMask
 {
 	bool always_active;
@@ -185,9 +191,9 @@ float MixBakedAndRealTimeShadow(ShadowData global, float shadow, float strength,
 
 float GetDirectionalShadowAttenuation(DirectionalShadowData direction_data, ShadowData global, Surface surface_ws) // world space
 {
-	#if !defined(_RECEIVE_SHADOWS)
-		return 1.0;
-	#endif
+#if !defined(_RECEIVE_SHADOWS)
+	return 1.0;
+#endif
 
 	float shadow;
 	if (direction_data.strength * global.strength <= 0.0f)
@@ -198,6 +204,25 @@ float GetDirectionalShadowAttenuation(DirectionalShadowData direction_data, Shad
 	{
 		shadow = GetCascadedShadow(direction_data, global, surface_ws);
 		shadow = MixBakedAndRealTimeShadow(global, shadow, direction_data.strength, direction_data.mask_channel);
+	}
+
+	return shadow;
+}
+
+float GetOtherShadowAttenuation(OtherShadowData other_data, ShadowData global, Surface surface_ws)
+{
+#if !defined(_RECEIVE_SHADOWS)
+	return 1.0;
+#endif
+
+	float shadow;
+	if (other_data.strength > 0.0f) // 和上面判断小于0不同的原因请阅读Shadow.cs -> ReserveDirectionalShadows函数
+	{
+		shadow = GetBakedShadow(global.shadow_mask, other_data.strength, other_data.mask_channel);
+	}
+	else
+	{
+		shadow = 1.0;
 	}
 
 	return shadow;

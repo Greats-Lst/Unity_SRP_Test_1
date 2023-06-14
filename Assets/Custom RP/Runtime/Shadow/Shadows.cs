@@ -248,6 +248,21 @@ public class Shadows
         return new Vector4(0.0f, 0.0f, 0.0f, -1);
     }
 
+    public Vector4 ReserveOtherShadows(Light light, int visible_light_idx)
+    {
+        if (light.shadows != LightShadows.None && light.shadowStrength > 0f)
+        {
+            LightBakingOutput light_baking = light.bakingOutput;
+            if (light_baking.lightmapBakeType == LightmapBakeType.Mixed &&
+                light_baking.mixedLightingMode == MixedLightingMode.Shadowmask)
+            {
+                m_use_shadow_mask = true;
+                return new Vector4(light.shadowStrength, 0f, 0f, light_baking.occlusionMaskChannel);
+            }
+        }
+        return new Vector4(0.0f, 0.0f, 0.0f, -1f);
+    }
+
     private void ExecuteBuffer()
     {
         m_context.ExecuteCommandBuffer(m_cmd_buffer);

@@ -15,6 +15,7 @@ CBUFFER_START(_CustomLight)
 	float4 _OtherLightPosition[MAX_OTHER_LIGHT_COUNT];
 	float4 _OtherLightDirection[MAX_OTHER_LIGHT_COUNT];
 	float4 _OtherLightSpotAngles[MAX_OTHER_LIGHT_COUNT];
+	float4 _OtherLightShadowData[MAX_OTHER_LIGHT_COUNT];
 CBUFFER_END
 
 struct Light
@@ -32,6 +33,14 @@ DirectionalShadowData GetDirectionalShadowData(int idx, ShadowData shadow_data)
 	data.tile_idx = _DirectionalLightShadowData[idx].y + shadow_data.cascade_idx;
 	data.normal_bias = _DirectionalLightShadowData[idx].z;
 	data.mask_channel = _DirectionalLightShadowData[idx].w;
+	return data;
+}
+
+OtherShadowData GetOtherShadowData(int idx)
+{
+	OtherShadowData data;
+	data.strength = _OtherLightShadowData[idx].x;
+	data.mask_channel = _OtherLightShadowData[idx].w;
 	return data;
 }
 
